@@ -1,0 +1,62 @@
+#map {
+  height: 100vh;
+}
+
+.feature-label {
+  background: white;
+  border: 2px solid #3388ff;
+  border-radius: 6px;
+  padding: 5px;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 1rem;
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
+html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+}
+body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+#sidebar {
+  width: 200px;
+  background: #f8f9fa;
+  border-right: 1px solid #ddd;
+  padding: 12px;
+  box-sizing: border-box;
+  height: 100vh;
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+#map {
+  flex: 1 1 0;
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+/* Style for layer toggle checkboxes and labels */
+#layer-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+#layer-toggles label {
+  margin-left: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+#layer-toggles input[type="checkbox"] {
+  accent-color: #3388ff;
+  cursor: pointer;
+}

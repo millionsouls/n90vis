@@ -1,0 +1,27 @@
+:root {
+  --menuwidth: 220px;
+
+  --div-back-white: #f0f0f0;
+  --offwhite2: #f9f9f9;
+
+  --textcolor-white: #818181;
+  --textcolor-white-dark: #444444;
+  --textcolor-white-darker: #333;
+
+  --boxshadow-center: 0 0px 15px rgba(0,0,0,0.7);
+  --boxshadow-glass: 0 0px 17px rgba(0,0,0,1);
+}
+
+button {
+  background-color: #FCFCFD;
+  color: #36395A;
+  border-radius: 5px;
+  transition: box-shadow 0.05s, transform 0.05s;
+  padding: 2px;
+  margin: 0px 30px;
+}
+
+button:active {
+  box-shadow: #D6D6E7 0 3px 7px inset;
+  transform: translateY(2px);
+}

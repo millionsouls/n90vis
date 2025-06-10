@@ -1,0 +1,137 @@
+/**
+ * Generates and loads custom URL links to defined layer/feature settings
+ * 
+ */
+
+const categoryAbbr = {
+    sectors: 1,
+    stars: 2,
+    sids: 3,
+    videomap: 4,
+};
+const categoryAbbrReverse = {
+    1: 'sectors',
+    2: 'stars',
+    3: 'sids',
+    4: 'videomap'
+};
+
+
+function encBase64(str) {
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decBase64(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return atob(str);
+}
+function compress(str) {
+    return LZString.compressToEncodedURIComponent(str);
+}
+function decompress(str) {
+    return LZString.decompressFromEncodedURIComponent(str);
+}
+
+/**
+ * Transforms dictionary into custom encoded string
+ * ex: jfk;1:4l-4r;2:parch3;4:combined|ewr;1:southwest;2:fqm3,phlbo4
+ * 
+ * @param {*} layersNested 
+ * @returns 
+ */
+function encodeLayers(data) {
+    // Build array of airport strings
+    const airportStrings = [];
+
+    Object.entries(data).forEach(([airport, categories]) => {
+        const catStrings = [];
+        for (const cat in categories) {
+            const abbr = categoryAbbr[cat];
+            if (!abbr) continue;
+            const layers = categories[cat];
+            if (!layers.length) continue;
+            catStrings.push(`${abbr}:${layers.map(l => l).join(',')}`);
+        }
+        if (catStrings.length === 0) return;
+        airportStrings.push(`${airport};${catStrings.join(';')}`);
+    });
+
+    const compactStr = airportStrings.join('|');
+    //console.log(compactStr)
+    return encBase64(compactStr);
+}
+
+/**
+ * Decode string into readable dictionary
+ * 
+ * @param {*} param 
+ * @returns 
+ */
+function decodeLayers(encoded) {
+  if (!encoded) return {};
+
+  try {
+    const decoded = decBase64(encoded);
+    const airportsArr = decoded.split('|');
+    const result = {};
+    console.log(decoded)
+
+    airportsArr.forEach(airportStr => {
+      const parts = airportStr.split(';')
+      const airport = parts[0]
+      if (!airport) return;
+
+      result[airport] = {};
+
+      parts.slice(1).forEach(catPart => {
+        const [catAbbr, layerStr] = catPart.split(':');
+        if (!catAbbr || !layerStr) return;
+        const cat = categoryAbbrReverse[catAbbr];
+        if (!cat) return;
+
+        const layers = layerStr.split(',').filter(Boolean);
+        if (layers.length) {
+          result[airport][cat] = layers;
+        }
+      });
+    });
+
+    console.log(result)
+    return result;
+  } catch (err) {
+    console.error('URL Decode error:', err);
+    return {};
+  }
+}
+/**
+ * Extract URL on page load and decode it
+ * 
+ * @returns 
+ */
+function getEnabledLayersFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const layerParam = params.get("l");
+
+    if (!layerParam) return {};
+    return decodeLayers(layerParam);
+}
+
+/**
+ * Detects map state changes and reflects them in the URL
+ * 
+ * @returns 
+ */
+function updateURLFromMapState() {
+    if (!window.LayerControl) return;
+    const enabled = window.LayerControl.getActiveLayers()
+    const url = new URL(window.location);
+
+    if (Object.keys(enabled).length > 0) {
+        url.searchParams.set("l", encodeLayers(enabled));
+    } else {
+        url.searchParams.delete("l");
+    }
+    history.replaceState(null, "", url);
+}
+
+export { getEnabledLayersFromURL, updateURLFromMapState };

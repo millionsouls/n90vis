@@ -43,7 +43,8 @@ MAP_CONFIG.geojsonFiles.forEach(file => {
               weight: feature.properties.style["stroke-width"] || 2,
               opacity: feature.properties.style["stroke-opacity"] || 1,
               fillColor: feature.properties.style.fill || "#3388ff",
-              fillOpacity: feature.properties.style["fill-opacity"] || 0.2
+              fillOpacity: feature.properties.style["fill-opacity"] || 0.2,
+              zIndez: feature.properties.style["zindex"] || 1
             };
           },
         onEachFeature: onEachFeature

@@ -11,5 +11,6 @@ const MAP_CONFIG = {
     'data/zoneA.geojson',
     'data/zoneB.geojson',
     'data/zoneC.geojson',
+    'data/zoneD.geojson',
   ]
 };

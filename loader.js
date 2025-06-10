@@ -35,18 +35,26 @@ MAP_CONFIG.geojsonFiles.forEach(file => {
       if (!data.features) throw new Error('Invalid GeoJSON: missing features');
       data.features.forEach(f => f.fileName = file);
 
-      // Create a GeoJSON layer
+      const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
+      const paneName = `pane-${file.replace(/[^\w]/g, '')}`;
+
+      // 200 base zindex
+      if (!map.getPane(paneName)) {
+        map.createPane(paneName);
+        map.getPane(paneName).style.zIndex = 200 + zIndex;
+      }
+
       const geoJsonLayer = L.geoJSON(data, {
+        pane: paneName,
         style: function(feature) {
-            return {
-              color: feature.properties.style.stroke || "#3388ff",
-              weight: feature.properties.style["stroke-width"] || 2,
-              opacity: feature.properties.style["stroke-opacity"] || 1,
-              fillColor: feature.properties.style.fill || "#3388ff",
-              fillOpacity: feature.properties.style["fill-opacity"] || 0.2,
-              zIndez: feature.properties.style["zindex"] || 1
-            };
-          },
+          return {
+            color: feature.properties.style.stroke || "#3388ff",
+            weight: feature.properties.style["stroke-width"] || 2,
+            opacity: feature.properties.style["stroke-opacity"] || 1,
+            fillColor: feature.properties.style.fill || "#3388ff",
+            fillOpacity: feature.properties.style["fill-opacity"] || 0.2
+          };
+        },
         onEachFeature: onEachFeature
       });
 

@@ -4,13 +4,21 @@ const MAP_CONFIG = {
   minZoom: 4,
   maxZoom: 15,
   bounds: [
-    [24.396308, -125.0],
-    [49.384358, -66.93457]
+    [20, -140],
+    [50, -60]
   ],
-  geojsonFiles: [
-    'data/zoneA.geojson',
-    'data/zoneB.geojson',
-    'data/zoneC.geojson',
-    'data/zoneD.geojson',
+
+  geoSector: [
+    'zoneA.geojson',
+    'zoneB.geojson',
+    'zoneC.geojson',
+    'zoneD.geojson',
+  ],
+
+  geoSID: [
+  ],
+
+  geoSTAR: [
+    'parch.geojson'
   ]
 };

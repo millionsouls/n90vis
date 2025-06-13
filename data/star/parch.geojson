@@ -52,7 +52,7 @@
     },
     {
       "type": "Feature",
-      "properties": { "id": "TRAIT", "from": "PVD"},
+      "properties": { "id": "TRAIT", "altitudes": ["@240"],  "from": "PVD"},
       "geometry": {
         "type": "Point",
         "coordinates": [-71.91767, 41.28467]
@@ -68,7 +68,7 @@
     },
     {
       "type": "Feature",
-      "properties": { "id": "CCC", "from": "PARCH"},
+      "properties": { "id": "CCC", "altitudes": ["@120"], "speed": ["@250K"], "from": "PARCH"},
       "geometry": {
         "type": "Point",
         "coordinates": [-72.798833, 40.92967]

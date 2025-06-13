@@ -7,7 +7,7 @@
       "properties": { "id": "ENE" },
       "geometry": {
         "type": "Point",
-        "coordinates": [-70.3681, 43.2554]
+        "coordinates": [-70.6135, 43.42567]
       }
     },
     {
@@ -15,7 +15,7 @@
       "properties": { "id": "ASPEN", "from": "ENE", "to": "ASPEN" },
       "geometry": {
         "type": "Point",
-        "coordinates": [-70.5469, 42.4896]
+        "coordinates": [-70.9115, 42.816]
       }
     },
     {
@@ -23,7 +23,7 @@
       "properties": { "id": "SHANK"},
       "geometry": {
         "type": "Point",
-        "coordinates": [-68.2923, 42.3768]
+        "coordinates": [-68.487167, 42.628]
       }
     },
     {
@@ -31,7 +31,7 @@
       "properties": { "id": "FRILL", "from": "SHANK" },
       "geometry": {
         "type": "Point",
-        "coordinates": [-69.4948, 42.3768]
+        "coordinates": [-69.82467, 42.229833]
       }
     },
     {

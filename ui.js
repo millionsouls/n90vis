@@ -1,6 +1,5 @@
 let selectedFeature = null;
 let labelMarker = null;
-const labelMarkers = []; // Track all labels
 
 function showLabel(feature) {
   const coords = feature.geometry.coordinates[0];
@@ -13,13 +12,16 @@ function showLabel(feature) {
   if (labelMarker) map.removeLayer(labelMarker);
   labelMarker = L.marker([centroid[1], centroid[0]], {
     icon: L.divIcon({
-      className: '',
-      html: `<div class="feature-label">
-              <b>${feature.properties.name}</b>
-              ${feature.properties.countA}
-              ${feature.properties.countB}
-            </div>`
-    }),
+      className: 'divIcon',
+      html: `
+      <div class="feature-label">
+        <div style="font-size:12px; text-align:center;"><b>${feature.properties.name}</b></div>
+        <div class="flex-center">
+          <span class="text-center">${feature.properties.countA}</span>
+          <span class="text-center">${feature.properties.countB}</span>
+        </div>
+      </div>
+     `}),
     interactive: false
   }).addTo(map);
 }

@@ -30,7 +30,11 @@ const map = L.map('map', {
   minZoom: CONFIG.minZoom,
   maxZoom: CONFIG.maxZoom,
   maxBounds: CONFIG.bounds,
-  layers: [currentLayer]
+  layers: [currentLayer],
+
+  scrollWheelZoom: false, // disable original zoom function
+  smoothWheelZoom: true,  // enable smooth zoom 
+  smoothSensitivity: 0.5,   // zoom speed. default is 1
 });
 const showMapCheckbox = document.getElementById('toggle-basemap');
 

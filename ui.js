@@ -7,6 +7,21 @@ let hoveredFeatures = [];
 let hoverLayers = [];
 let mouseMoveHandler = null;
 
+// Helper to format altitude numbers to 00 style
+function formatAlt(val) {
+  // Only format if it's a number and >= 0
+  if (typeof val === "number" || /^\d+$/.test(val)) {
+    let num = Number(val);
+    if (num === 0) return 'SFC'; // Surface level
+    if (num >= 1000) {
+      let hundreds = Math.round(num / 100);
+      return hundreds.toString().padStart(3, '0');
+    }
+    return num.toString();
+  }
+  return val; // If not a number, return as is
+}
+
 // Helper to build info HTML for a feature
 function buildFeatureInfoHTML(features) {
   // Group by Position
@@ -22,10 +37,13 @@ function buildFeatureInfoHTML(features) {
     const altRows = feats.map(f => {
       const low = f.properties.Low ?? '';
       const high = f.properties.High ?? '';
+      // Format numbers
+      const lowFmt = formatAlt(low);
+      const highFmt = formatAlt(high);
       if (low === high) {
-        return { low: low, high: '' };
+        return { low: lowFmt, high: '' };
       } else {
-        return { low, high };
+        return { low: lowFmt, high: highFmt };
       }
     });
     // Remove duplicates
@@ -83,12 +101,29 @@ function hideHoverInfoBox() {
   hoverInfoBox.style.display = 'none';
 }
 
+// Helper: check if latlng is inside a polygon (for L.Polygon)
+function isLatLngInPolygon(latlng, polygon) {
+  if (!polygon.getLatLngs) return false;
+  const polyPoints = polygon.getLatLngs()[0];
+  let inside = false;
+  for (let i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+    const xi = polyPoints[i].lat, yi = polyPoints[i].lng;
+    const xj = polyPoints[j].lat, yj = polyPoints[j].lng;
+    const intersect = ((yi > latlng.lng) !== (yj > latlng.lng)) &&
+      (latlng.lat < (xj - xi) * (latlng.lng - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 // Attach hover events to each polygon layer
 function handleFeatureHover(feature, layer, geoLayer) {
   layer.on('mousemove', function (e) {
     let featuresAtPoint = [];
     map.eachLayer(l => {
       if (l.feature && l.getBounds && l.getBounds().contains(e.latlng)) {
+        // For polygons, check actual geometry
+        if (l instanceof L.Polygon && !isLatLngInPolygon(e.latlng, l)) return;
         featuresAtPoint.push(l.feature);
       }
     });

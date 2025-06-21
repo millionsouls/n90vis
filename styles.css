@@ -9,7 +9,6 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-
   white-space: nowrap;
 }
 .flex-center {
@@ -30,30 +29,34 @@
   border:1px solid #888;
 }
 .feature-info-pos {
-  width: 95px;
+  width: 100px;
   font-weight: bold;
   padding-right: 5px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .feature-info-low {
-  width: 30px;
+  width: fit-content;
   text-align: center;
   padding-right: 5px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .feature-info-high {
-  width: 30px;
+  width: fit-content;
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 #hover-info-box {
   width: fit-content;
+  display: none;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 13px;
 }
 
 html, body {
@@ -138,4 +141,7 @@ body {
 .res-label.at {
   border-top: 2px solid #333;
   border-bottom: 2px solid #333;
+}
+body, html, #sidebar, #hover-info-box, input, label, button, select, textarea {
+  font-family: 'Roboto', Arial, sans-serif !important;
 }

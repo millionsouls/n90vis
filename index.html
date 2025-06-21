@@ -2,18 +2,23 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>N90 Area Visualiser</title>
+  <title>ZNY TRACON Visualizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <link rel="stylesheet" href="styles.css" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <style>
-  </style>
 </head>
+
 <body>
+  <!-- Info box under cursor-->
   <div id="hover-info-box"></div>
+
+  <!-- Selection/Settings container -->
   <div id="sidebar">
     <h4>Layers</h4>
     <div id="layer-toggles">
@@ -27,13 +32,11 @@
       <div id="toggle-section-video"><h4>Video Maps</h4></div>
     </div>
   </div>
+
+  <!-- Map container -->
   <div id="map"></div>
-  <!--
-  CONFIG
-  MAP
-  LOADER
-  UI
-  -->
+
+  <!-- LOAD ORDER -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="src/smoothscroll.js"></script>
   <script src="src/config.js"></script>

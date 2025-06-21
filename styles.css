@@ -129,15 +129,19 @@ body {
   align-items: center; 
   justify-content: center;
 }
+
 .res-label{
   margin: 0px 2px 0px 2px;
 }
-.res-label.plus {
-  border-top: 2px solid #333;
-}
-.res-label.min {
+/* AT OR ABOVE, display border on bottom */
+.res-label.abv {
   border-bottom: 2px solid #333;
 }
+/* AT OR BELOW, display the border on top */
+.res-label.blw {
+  border-top: 2px solid #333;
+}
+/* AT, display both top and bottom */
 .res-label.at {
   border-top: 2px solid #333;
   border-bottom: 2px solid #333;

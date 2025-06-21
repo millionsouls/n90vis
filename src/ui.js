@@ -1,3 +1,9 @@
+/**
+ * UI and interaction logic for the map application
+ * 
+ * only the devil knows what's going on here
+ */
+
 let selectedFeature = null;
 let labelMarker = null;
 let videoLayer = null;
@@ -7,7 +13,12 @@ let hoveredFeatures = [];
 let hoverLayers = [];
 let mouseMoveHandler = null;
 
-// Helper to format altitude numbers to 00 style
+/**
+ * Format altitudes into 000
+ * 
+ * @param {int} val 
+ * @returns 
+ */
 function formatAlt(val) {
   // Only format if it's a number and >= 0
   if (typeof val === "number" || /^\d+$/.test(val)) {
@@ -22,7 +33,13 @@ function formatAlt(val) {
   return val; // If not a number, return as is
 }
 
-// Helper to build info HTML for a feature
+/**
+ * Construct and format the data for a layer/combine all layers of same position
+ * Position | Low | High
+ * 
+ * @param {Array.<string>} features 
+ * @returns 
+ */
 function buildFeatureInfoHTML(features) {
   // Group by Position
   const grouped = {};
@@ -37,6 +54,7 @@ function buildFeatureInfoHTML(features) {
     const altRows = feats.map(f => {
       const low = f.properties.Low ?? '';
       const high = f.properties.High ?? '';
+
       // Format numbers
       const lowFmt = formatAlt(low);
       const highFmt = formatAlt(high);
@@ -46,6 +64,7 @@ function buildFeatureInfoHTML(features) {
         return { low: lowFmt, high: highFmt };
       }
     });
+
     // Remove duplicates
     const uniqueAltRows = [];
     const seen = new Set();
@@ -56,9 +75,12 @@ function buildFeatureInfoHTML(features) {
         seen.add(key);
       }
     });
-    // Notes (combine all notes for this position)
+
+    // Notes UNUSED
+    // ${notes ? `<div class="notes" style="margin-bottom:4px;">${notes}</div>` : ''}
     const notes = feats.map(f => f.properties.Notes).filter(Boolean).join('\n');
-    // Color (use first feature's color)
+
+    // Color text using layer color
     const color = feats[0].properties.Color || "#222";
     return `
       <div class="feature-info-row" style="color:${color};">
@@ -72,36 +94,53 @@ function buildFeatureInfoHTML(features) {
           `).join('')}
         </div>
       </div>
-      ${notes ? `<div class="notes" style="margin-bottom:4px;">${notes}</div>` : ''}
     `;
   }).join('');
 }
 
-// Show info box at cursor with all features
+/**
+ * Show the info box when over a layer
+ * 
+ * @param {*} features 
+ * @param {*} event 
+ * @returns 
+ */
 function showHoverInfoBox(features, event) {
   if (!features.length) {
     hoverInfoBox.style.display = 'none';
     return;
   }
+
   hoverInfoBox.innerHTML = buildFeatureInfoHTML(features);
   hoverInfoBox.style.display = 'block';
-  // Position box near cursor, but not off screen
+  
+  // Position box Southwest of cursor
   let x = event.originalEvent.clientX + 15;
   let y = event.originalEvent.clientY + 15;
   let boxRect = hoverInfoBox.getBoundingClientRect();
   let winW = window.innerWidth, winH = window.innerHeight;
+
   if (x + boxRect.width > winW) x = winW - boxRect.width - 10;
   if (y + boxRect.height > winH) y = winH - boxRect.height - 10;
+
   hoverInfoBox.style.left = x + 'px';
   hoverInfoBox.style.top = y + 'px';
 }
 
-// Remove info box
+/**
+ * Remove hover info box on leaving a layer
+ */
 function hideHoverInfoBox() {
   hoverInfoBox.style.display = 'none';
 }
 
-// Helper: check if latlng is inside a polygon (for L.Polygon)
+/**
+ * Ensure a latlng is within a certain polygon
+ * 
+ * @param {*} latlng 
+ * @param {*} polygon 
+ * @returns 
+ */
 function isLatLngInPolygon(latlng, polygon) {
   if (!polygon.getLatLngs) return false;
   const polyPoints = polygon.getLatLngs()[0];
@@ -116,7 +155,13 @@ function isLatLngInPolygon(latlng, polygon) {
   return inside;
 }
 
-// Attach hover events to each polygon layer
+/**
+ * Attach hover handles to every layer feature; detect if mouse is over a feature and show/hide info box
+ * 
+ * @param {*} feature 
+ * @param {*} layer 
+ * @param {*} geoLayer 
+ */
 function handleFeatureHover(feature, layer, geoLayer) {
   layer.on('mousemove', function (e) {
     let featuresAtPoint = [];
@@ -129,60 +174,8 @@ function handleFeatureHover(feature, layer, geoLayer) {
     });
     showHoverInfoBox(featuresAtPoint, e);
   });
+
   layer.on('mouseout', function () {
     hideHoverInfoBox();
   });
-}
-
-function styleFeature(feature) {
-  return {
-    color: "#3388ff",
-    weight: (selectedFeature === feature) ? 3 : 1,
-    fillOpacity: (selectedFeature === feature) ? 0.3 : 0
-  };
-}
-
-function resetStyles(geoLayer) {
-  if (geoLayer && geoLayer.eachLayer) {
-    geoLayer.eachLayer(layer => {
-      if (layer.feature) {
-        layer.setStyle(styleFeature(layer.feature));
-      }
-    });
-  }
-}
-
-function loadVideoMap(url) {
-  fetch(url)
-    .then(res => res.json())
-    .then(geojson => {
-      if (videoLayer) {
-        map.removeLayer(videoLayer);
-      }
-      videoLayer = L.geoJSON(geojson, {
-        style: feature => {
-          // Style for LineString, Polygon, etc.
-          if (feature.geometry.type === "LineString") {
-            return { color: "#ff6600", weight: 2 };
-          }
-          if (feature.geometry.type === "Polygon") {
-            return { color: "#ff6600", weight: 2, fillOpacity: 0.1 };
-          }
-          return {};
-        },
-        pointToLayer: (feature, latlng) => {
-          // Style for Points
-          return L.circleMarker(latlng, { radius: 4, color: "#ff6600" });
-        }
-      }).addTo(map);
-    });
-}
-
-function toggleVideoMap(show) {
-  if (show) {
-    loadVideoMap('data/videomap/JFK.geojson');
-  } else if (videoLayer) {
-    map.removeLayer(videoLayer);
-    videoLayer = null;
-  }
 }

@@ -1,4 +1,7 @@
-// Map creation and manipulation
+/**
+ * Leaflet map configuration and base layers setup
+ */
+
 const CONFIG = {
   center: [40.703376, -74.015415],
   zoom: 7.5,

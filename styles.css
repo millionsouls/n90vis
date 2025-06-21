@@ -21,6 +21,41 @@
   text-align: center;
 }
 
+.feature-info-row {
+  display: flex;
+  flex-direction: row;
+  align-items: top;
+  padding: 2px;
+  margin: 2px 0px 2px 0px;
+  border:1px solid #888;
+}
+.feature-info-pos {
+  width: 95px;
+  font-weight: bold;
+  padding-right: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.feature-info-low {
+  width: 30px;
+  text-align: center;
+  padding-right: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.feature-info-high {
+  width: 30px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#hover-info-box {
+  width: fit-content;
+}
+
 html, body {
       height: 100%;
       margin: 0;

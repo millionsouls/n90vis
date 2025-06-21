@@ -1,14 +1,15 @@
 let geoLayers = {};
 
 function onEachFeature(feature, layer) {
-  handleFeatureClick(feature, layer);
+  handleFeatureHover(feature, layer);
 }
 
 function addLayerToggle(file, name, section = "zones", failed = false) {
   const sectionMap = {
     zones: "toggle-section-zones",
     star: "toggle-section-star",
-    sid: "toggle-section-sid"
+    sid: "toggle-section-sid",
+    video: "toggle-section-video" // Add this line
   };
   const container = document.getElementById(sectionMap[section] || sectionMap.zones);
   const id = `toggle-${file.replace(/[^\w]/g, '')}`;
@@ -83,7 +84,7 @@ function buildStarMarkerHTML(id, altitudes, speeds) {
   `;
 }
 
-MAP_CONFIG.geoSector.forEach(file => {
+GEOFILES.sector.forEach(file => {
   fetch("data/sector/" + file)
     .then(res => {
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -95,6 +96,7 @@ MAP_CONFIG.geoSector.forEach(file => {
 
       const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
       const paneName = `pane-${file.replace(/[^\w]/g, '')}`;
+      
       if (!map.getPane(paneName)) {
         map.createPane(paneName);
         map.getPane(paneName).style.zIndex = 200 + zIndex;
@@ -103,12 +105,14 @@ MAP_CONFIG.geoSector.forEach(file => {
       const geoJsonLayer = L.geoJSON(data, {
         pane: paneName,
         style: function (feature) {
+          // Use Color property if present, else fallback
+          const color = feature.properties.Color || "#3388ff";
           return {
-            color: feature.properties.style?.stroke || "#3388ff",
-            weight: feature.properties.style?.["stroke-width"] || 2,
-            opacity: feature.properties.style?.["stroke-opacity"] || 1,
-            fillColor: feature.properties.style?.fill || "#3388ff",
-            fillOpacity: feature.properties.style?.["fill-opacity"] || 0.2
+            color: color,
+            weight: 2,
+            opacity: 1,
+            fillColor: color,
+            fillOpacity: 0.6
           };
         },
         onEachFeature: onEachFeature
@@ -124,7 +128,7 @@ MAP_CONFIG.geoSector.forEach(file => {
     });
 });
 
-MAP_CONFIG.geoSID.forEach(file => {
+GEOFILES.sid.forEach(file => {
   fetch("data/sid/" + file)
     .then(res => {
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -139,7 +143,7 @@ MAP_CONFIG.geoSID.forEach(file => {
     });
 });
 
-MAP_CONFIG.geoSTAR.forEach(file => {
+GEOFILES.star.forEach(file => {
   fetch("data/star/" + file)
     .then(res => {
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -199,8 +203,8 @@ MAP_CONFIG.geoSTAR.forEach(file => {
               const prefix = speedRaw[0];
               const value = speedRaw.slice(1);
               let cls = "";
-              if (prefix === "+") cls = "plus";
-              else if (prefix === "-") cls = "min";
+              if (prefix === "-") cls = "plus";
+              else if (prefix === "+") cls = "min";
               else if (prefix === "@") cls = "at";
              return { value, cls};
             });
@@ -246,5 +250,45 @@ MAP_CONFIG.geoSTAR.forEach(file => {
     .catch(err => {
       console.error(`Failed to load ${file}:`, err);
       addLayerToggle(file, file, "star", true);
+    });
+});
+
+GEOFILES.video.forEach(file => {
+  fetch("data/videomap/" + file)
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      if (!data.features) throw new Error('Invalid GeoJSON: missing features');
+      data.features.forEach(f => f.fileName = file);
+
+      function videoStyle(feature) {
+        if (feature.geometry.type === "LineString") {
+          return { color: "#000000", weight: 2 };
+        }
+        if (feature.geometry.type === "Polygon") {
+          return { color: "#000000", weight: 2, fillOpacity: 0.1 };
+        }
+        return {};
+      }
+
+      // Point styling
+      function videoPointToLayer(feature, latlng) {
+        return null;
+      }
+
+      const geoJsonLayer = L.geoJSON(data, {
+        style: videoStyle,
+        pointToLayer: videoPointToLayer
+      });
+
+      const group = L.layerGroup([geoJsonLayer]).addTo(map);
+      geoLayers[file] = group;
+      addLayerToggle(file, data.name || file, "video");
+    })
+    .catch(err => {
+      console.error(`Failed to load ${file}:`, err);
+      addLayerToggle(file, file, "video", true);
     });
 });

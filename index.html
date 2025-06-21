@@ -13,12 +13,18 @@
   </style>
 </head>
 <body>
+  <div id="hover-info-box" style="display:none; position:fixed; pointer-events:none; z-index:9999; background:white; border:1px solid #888; border-radius:4px; padding:4px; font-size:12px;"></div>
   <div id="sidebar">
     <h4>Layers</h4>
     <div id="layer-toggles">
+      <div>
+        <input type="checkbox" id="toggle-basemap" checked>
+        <label for="toggle-basemap">Show Map</label>
+      </div>
       <div id="toggle-section-zones"><h4>Zones</h4></div>
       <div id="toggle-section-star"><h4>STAR</h4></div>
       <div id="toggle-section-sid"><h4>SID</h4></div>
+      <div id="toggle-section-video"><h4>Video Maps</h4></div>
     </div>
   </div>
   <div id="map"></div>

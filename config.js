@@ -1,24 +1,20 @@
-const MAP_CONFIG = {
-  center: [40.703376, -74.015415],
-  zoom: 10,
-  minZoom: 4,
-  maxZoom: 15,
-  bounds: [
-    [20, -140],
-    [50, -60]
+const GEOFILES = {
+  sector: [
+    'jfk/JFK_4s.geojson',
+
+    'isp/isp.geojson',
+
+    'lib/lib.geojson',
   ],
 
-  geoSector: [
-    'zoneA.geojson',
-    'zoneB.geojson',
-    'zoneC.geojson',
-    'zoneD.geojson',
+  sid: [
   ],
 
-  geoSID: [
+  star: [
+    'parch.geojson',
   ],
 
-  geoSTAR: [
-    'parch.geojson'
+  video: [
+    'jfk/jfk.geojson',
   ]
 };

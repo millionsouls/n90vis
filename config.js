@@ -2,9 +2,9 @@ const GEOFILES = {
   sector: [
     'jfk/JFK_4s.geojson',
 
-    'isp/isp.geojson',
+    'isp/ISP.geojson',
 
-    'lib/lib.geojson',
+    'lib/LIB.geojson',
   ],
 
   sid: [
@@ -15,6 +15,6 @@ const GEOFILES = {
   ],
 
   video: [
-    'jfk/jfk.geojson',
+    'jfk/JFK.geojson',
   ]
 };

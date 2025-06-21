@@ -1,6 +1,62 @@
 #map {
   height: 100vh;
 }
+#map {
+  flex: 1 1 0;
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+#sidebar {
+  height: 100vh;
+  width: 200px;
+  background: #f8f9fa;
+  border-right: 1px solid #ddd;
+  padding: 12px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display:flex; 
+  flex-direction:column; 
+  justify-content:center
+}
+.text-center{
+  text-align: center;
+}
+
+html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+}
+body {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+body, html, #sidebar, #hover-info-box, input, label, button, select, textarea {
+  font-family: 'Roboto', Arial, sans-serif !important;
+}
+
+/* Style for the hover info box */
+#hover-info-box {
+  width: fit-content;
+  display: none;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 13px;
+}
 .feature-label {
   background: white;
   border: 2px solid #3388ff;
@@ -11,15 +67,6 @@
   align-items: center;
   white-space: nowrap;
 }
-.flex-center {
-  display:flex; 
-  flex-direction:column; 
-  justify-content:center
-}
-.text-center{
-  text-align: center;
-}
-
 .feature-info-row {
   display: flex;
   flex-direction: row;
@@ -46,48 +93,6 @@
   text-align: center;
   white-space: nowrap;
 }
-#hover-info-box {
-  width: fit-content;
-  display: none;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  background: white;
-  border: 1px solid #888;
-  border-radius: 4px;
-  padding: 4px;
-  font-size: 13px;
-}
-
-html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-}
-body {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
-#sidebar {
-  width: 200px;
-  background: #f8f9fa;
-  border-right: 1px solid #ddd;
-  padding: 12px;
-  box-sizing: border-box;
-  height: 100vh;
-  position: relative;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-}
-#map {
-  flex: 1 1 0;
-  height: 100vh;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
 
 /* Style for layer toggle checkboxes and labels */
 #layer-toggles {
@@ -106,6 +111,7 @@ body {
   cursor: pointer;
 }
 
+/* Style for the procedure labels */
 .divIcon {
   background: none !important;
   border: 0 !important;
@@ -129,7 +135,6 @@ body {
   align-items: center; 
   justify-content: center;
 }
-
 .res-label{
   margin: 0px 2px 0px 2px;
 }
@@ -145,7 +150,4 @@ body {
 .res-label.at {
   border-top: 2px solid #333;
   border-bottom: 2px solid #333;
-}
-body, html, #sidebar, #hover-info-box, input, label, button, select, textarea {
-  font-family: 'Roboto', Arial, sans-serif !important;
 }

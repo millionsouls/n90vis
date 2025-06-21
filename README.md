@@ -1,8 +1,17 @@
-# N90 airspace visualization
+# ZNY TRACON Airspace Visualization
+Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additional options for displaying SIDs, STARs, and video maps.
 
-# TODO
-Describe layered airspace
-Pull FAA NASR data for FIX coords
-    - Automated
-Toggle OSM layer
-URL to airspace section
+## Installation
+```
+Copy and run
+```
+
+## Structure
+
+
+## Acknowledgments
+`https://github.com/vzoa/NctVisualizer` Original idea and design
+
+`https://github.com/mutsuyuki/Leaflet.SmoothWheelZoom` For, well, smooth scroll
+
+## TODO

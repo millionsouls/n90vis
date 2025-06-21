@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <title>ZNY TRACON Visualizer</title>
@@ -7,30 +8,25 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/sidebar.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
   <!-- Info box under cursor-->
   <div id="hover-info-box"></div>
 
-  <!-- Selection/Settings container -->
-  <div id="sidebar">
-    <h4>Layers</h4>
-    <div id="layer-toggles">
-      <div>
-        <input type="checkbox" id="toggle-basemap" checked>
-        <label for="toggle-basemap">Show Map</label>
-      </div>
-      <div id="toggle-section-zones"><h4>Zones</h4></div>
-      <div id="toggle-section-star"><h4>STAR</h4></div>
-      <div id="toggle-section-sid"><h4>SID</h4></div>
-      <div id="toggle-section-video"><h4>Video Maps</h4></div>
+  <!-- Sidebar -->
+  <div>
+    <div id="information">
+      <h1>Test</h1>
     </div>
+    <div id="sidebar"></div>
   </div>
 
   <!-- Map container -->
@@ -38,10 +34,11 @@
 
   <!-- LOAD ORDER -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="src/smoothscroll.js"></script>
+  <script src="src/ui/smoothscroll.js"></script>
   <script src="src/config.js"></script>
   <script src="src/map.js"></script>
   <script src="src/loader.js"></script>
-  <script src="src/ui.js"></script>
+  <script src="src/ui/mousehover.js"></script>
 </body>
+
 </html>

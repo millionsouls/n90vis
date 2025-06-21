@@ -3,24 +3,26 @@ Loading geojson files
 */
 
 const GEOFILES = {
-  sector: [
-    // Kennedy
-    'jfk/JFK_4s.geojson',
+  jfk: [
+    "sectors/JFK_4s.geojson",
+    "sectors/JFK_31s.geojson",
 
-    // Long Island
-    'isp/ISP.geojson',
-
-    // Liberty
-    'lib/LIB.geojson',
+    "stars/parch.geojson",
+    
+    "videomap/JFK.geojson"
   ],
+  lga: [
 
-  pd: [
-    // Kennedy
-    'star/parch.geojson',
   ],
+  ewr: [
 
-  video: [
-    // Kennedy
-    'jfk/JFK.geojson',
-  ]
+  ],
+  isp: [
+    "sectors/ISP.geojson"
+
+  ],
+  lib: [
+    "sectors/LIB.geojson"
+
+  ],
 };

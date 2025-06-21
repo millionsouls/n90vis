@@ -1,6 +1,6 @@
 {
 "type": "FeatureCollection",
-"name": "JFK",
+"name": "Combined",
 "features": [
 { "type": "Feature", "properties": { "isLineDefaults": true, "bcg": 18, "filters": [ 16, 23 ], "style": "solid", "thickness": 1 }, "geometry": { "type": "Point", "coordinates": [ -78.1277778, 42.3666667 ] } },
 { "type": "Feature", "properties": { "isTextDefaults": true, "bcg": 18, "filters": [ 16, 23 ], "size": 1, "underline": false, "opaque": false, "xOffset": 0, "yOffset": 0 }, "geometry": { "type": "Point", "coordinates": [ -78.1277778, 42.3666667 ] } },

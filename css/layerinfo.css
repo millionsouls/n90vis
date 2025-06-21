@@ -1,0 +1,82 @@
+/* Style for the hover info box */
+#hover-info-box {
+  width: fit-content;
+  display: none;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 6px;
+  padding: 4px;
+  font-size: 14px;
+  box-shadow: 0 0px 20px rgba(0,0,0,1);
+  /*-webkit-text-stroke: 0.3px black;*/
+}
+.feature-info-row {
+  display: flex;
+  flex-direction: row;
+  align-items: top;
+  padding: 4px;
+  margin: 3px 1px 3px 1px;
+  box-shadow: 0 0px 20px rgba(0,0,0,0.7);
+}
+.feature-info-pos {
+  width: 150px;
+  font-weight: 700;
+  padding-right: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.feature-info-low {
+  width: fit-content;
+  text-align: center;
+  padding-right: 5px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.feature-info-high {
+  width: fit-content;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* Style for the procedure labels */
+.divIcon {
+  background: none;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.procedure-label{
+  border-radius: 5px;
+  border-color: black;
+  border: 1px solid #000;
+  padding: 2px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.procedure-text {
+  flex: 1; 
+  margin: 0px;
+  font-size: 12px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+}
+.res-label{
+  margin: 0px 2px 0px 2px;
+}
+/* AT OR ABOVE, display border on bottom */
+.res-label.abv {
+  border-bottom: 2px solid #333;
+}
+/* AT OR BELOW, display the border on top */
+.res-label.blw {
+  border-top: 2px solid #333;
+}
+/* AT, display both top and bottom */
+.res-label.at {
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+}

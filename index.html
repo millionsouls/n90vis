@@ -1,44 +1,93 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
-  <title>N90 Area Visualiser</title>
+  <title>ZNY TRACON Visualizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/sidebar.css" />
+  <link rel="stylesheet" href="css/layerinfo.css" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <style>
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+
 <body>
+  <!-- Info box under cursor-->
   <div id="hover-info-box"></div>
-  <div id="sidebar">
-    <h4>Layers</h4>
-    <div id="layer-toggles">
-      <div>
-        <input type="checkbox" id="toggle-basemap" checked>
-        <label for="toggle-basemap">Show Map</label>
-      </div>
-      <div id="toggle-section-zones"><h4>Zones</h4></div>
-      <div id="toggle-section-star"><h4>STAR</h4></div>
-      <div id="toggle-section-sid"><h4>SID</h4></div>
-      <div id="toggle-section-video"><h4>Video Maps</h4></div>
+  
+  <!-- Sidebar -->
+  <button id="sidebar-toggle">&#9776;</button> 
+  <div id="menu">
+    <div id="information">
+      <h4>ZNY TRACON Visualizer</h4>
+      <h5 style="color:red; text-align: center;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
+      <label>
+        <input type="checkbox" id="toggle-basemap" checked />
+        Show Basemap
+      </label>
     </div>
+    <div id="search-section">
+      <input type="text" id="layer-search" placeholder="Search">
+      <div id="search-results"></div>
+    </div>
+    <div id="sidebar"></div>
   </div>
+
+  <!-- Map container -->
   <div id="map"></div>
-  <!--
-  CONFIG
-  MAP
-  LOADER
-  UI
-  -->
+
+  <!-- LOAD ORDER -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="src/smoothscroll.js"></script>
+  <script src="src/ui/smoothscroll.js"></script>
   <script src="src/config.js"></script>
-  <script src="src/map.js"></script>
-  <script src="src/loader.js"></script>
-  <script src="src/ui.js"></script>
+  <script type="module" src="src/map.js"></script>
+  <script type="module" src="src/loader.js"></script>
+  <script type="module" src="src/ui/mouse-hover.js"></script>
+  <script type="module" src="src/url-handler.js"></script>
+  <script type="module" src="src/main.js"></script>
+
+  <footer id="page-footer">
+    <a href="https://github.com/millionsouls/n90vis" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
+      <i class="fa fa-github" aria-hidden="true"></i>
+      GitHub
+    </a>
+
+    <a href="https://nyartcc.org/" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
+      <img src="css/ZNY-transparent.png" class="footer-logo"></img>
+      vZNY
+    </a>
+  </footer>
 </body>
+<script>
+    const toggleButton = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('menu');
+
+    toggleButton.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      toggleButton.style.left = sidebar.classList.contains('collapsed') ? '10px' : '210px';
+
+      // Force map resize after animation
+      setTimeout(() => {
+        if (window.map) window.map.invalidateSize();
+      }, 310);
+    });
+
+    document.addEventListener("click", function (e) {
+      const searchBox = document.getElementById("layer-search");
+      const resultsBox = document.getElementById("search-results");
+
+      const clickedInside = searchBox.contains(e.target) || resultsBox.contains(e.target);
+
+      if (!clickedInside) {
+        resultsBox.style.display = "none";
+      }
+    });
+</script>
 </html>

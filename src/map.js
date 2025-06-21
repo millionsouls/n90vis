@@ -1,8 +1,13 @@
-// Map creation and manipulation
+/**
+ * map.js
+ * 
+ * Leaflet map configuration and base layers setup
+ */
+
 const CONFIG = {
   center: [40.703376, -74.015415],
   zoom: 7.5,
-  minZoom: 4,
+  minZoom: 5,
   maxZoom: 15,
   bounds: [
     [20, -140],
@@ -10,20 +15,20 @@ const CONFIG = {
   ],
 }
 const baseLayers = {
-  "OSM Standard": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  "Standard": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap contributors'
   }),
-  "OSM Topo": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  "Topo": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
     attribution: '© OpenTopoMap contributors'
   }),
-  "OSM Hot": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  "Hot": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
   })
 };
-let currentLayer = baseLayers["OSM Standard"];
+let currentLayer = baseLayers["Standard"];
 const map = L.map('map', {
   center: CONFIG.center,
   zoom: CONFIG.zoom,
@@ -32,13 +37,16 @@ const map = L.map('map', {
   maxBounds: CONFIG.bounds,
   layers: [currentLayer],
 
+  zoomControl: false, // create our own and move to the right
   scrollWheelZoom: false, // disable original zoom function
   smoothWheelZoom: true,  // enable smooth zoom 
-  smoothSensitivity: 0.5,   // zoom speed. default is 1
+  smoothSensitivity: 5,   // zoom speed. default is 1
 });
 const showMapCheckbox = document.getElementById('toggle-basemap');
 
 L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
+L.control.zoom({ position: 'topright' }).addTo(map);
+L.control.scale({ position: 'bottomright' }).addTo(map);
 
 map.on('baselayerchange', function(e) {
   currentLayer = baseLayers[e.name];
@@ -54,3 +62,5 @@ showMapCheckbox.addEventListener('change', function() {
     });
   }
 });
+
+export { map }

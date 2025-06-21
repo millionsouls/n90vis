@@ -1,20 +1,53 @@
+/*
+Loading geojson files
+*/
+
 const GEOFILES = {
-  sector: [
-    'jfk/JFK_4s.geojson',
+  jfk: [
+    "sectors/JFK_4s.json",
 
-    'isp/ISP.geojson',
-
-    'lib/LIB.geojson',
+    "stars/PARCH3.geojson",
+    
+    "videomap/JFK.geojson"
   ],
-
-  sid: [
+  lga: [
+    "sectors/LGA_D4L4RX31.json",
   ],
+  ewr: [
+    "sectors/EWR_SW.json",
 
-  star: [
-    'parch.geojson',
+    "stars/FQM3.geojson",
+    "stars/PHLBO4.geojson",
   ],
+  isp: [
+    "sectors/ISP.geojson"
 
-  video: [
-    'jfk/JFK.geojson',
-  ]
+  ],
+  lib: [
+    "sectors/LIB.geojson"
+
+  ],
+  hpn: [
+    "sectors/HPN_16.json",
+    "sectors/HPN_34.json",
+  ],
+  mdt: [
+    "sectors/MDT_E.json",
+    "sectors/MDT_W.json",
+  ],
+  bgm: [
+    "sectors/BGM.geojson",
+  ],
+  avp: [
+    "sectors/AVP.geojson",
+  ],
+  abe: [
+    "sectors/ABE.geojson",
+  ],
+  elm: [
+    "sectors/ELM.geojson",
+  ],
+  wri: [
+    "sectors/WRI.geojson"
+  ],
 };

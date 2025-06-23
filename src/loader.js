@@ -76,7 +76,7 @@ function loadGeoFiles(GEOFILES, map) {
                 const marker = L.marker([coords[1], coords[0]], {
                   pane: markerPane,
                   icon: L.divIcon({
-                    className: 'divIcon',
+                    className: 'procedure-icon',
                     html: buildMarkerHTML(props.id, altitudes, speeds, color),
                     iconAnchor: [6, 6]
                   })

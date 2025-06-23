@@ -54,9 +54,9 @@ window.LayerControl = {
 };
 
 loadGeoFiles(GEOFILES, map).then(({ GEODATA, GEOLAYERS }) => {
-  buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState);
-  attachSidebarListeners(document.getElementById("sidebar"));
-  setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState);
+  buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState)
+  attachSidebarListeners(document.getElementById("sidebar"))
+  setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState)
 
   const enabledLayers = getEnabledLayersFromURL();
   if (enabledLayers && window.LayerControl) {

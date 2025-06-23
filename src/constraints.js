@@ -49,6 +49,17 @@ function handleConstraints(constraints) {
   return parsed;
 }
 
+function isColorTooBright(hexColor) {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Relative luminance formula
+  const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
+  return brightness > 210;
+}
+
 /**
  * Construct HTML for a marker
  * 
@@ -60,6 +71,10 @@ function handleConstraints(constraints) {
  */
 function buildMarkerHTML(id, altitudes, speeds, color) {
   // Altitude HTML
+  const isBright = isColorTooBright(color);
+  const adjColor = isBright ? '#000' : '#fff';
+
+
   let altHtml = "";
   if (altitudes.length === 2) {
     altHtml = `
@@ -96,9 +111,9 @@ function buildMarkerHTML(id, altitudes, speeds, color) {
   return `
     <div style="display: flex; flex-direction: column; align-items: center;">
       <div style="width:12px; height:12px; border-radius:50%; background:${color}; border:2px solid #000;"></div>
-      <div class="procedure-label">
+      <div class="procedure-label" style="border-color:${color}; ">
         <div style="font-size:12px; text-align:center;">${id || ""}</div>
-        <div class="procedure-text">
+        <div class="procedure-text" style="">
           ${altHtml}
           ${speedHtml}
         </div>

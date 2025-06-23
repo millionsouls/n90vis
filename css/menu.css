@@ -1,27 +1,41 @@
+@import url('./common.css');
+
+:root {
+  --menuoffset-left: 10px;
+  --menuoffset-top: 10px;
+}
+
 #menu {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 200px;
+  top: var(--menuoffset-top);
+  left: var(--menuoffset-left);
+  height: calc(100vh - var(--menuoffset-top)*2);
+  width: var(--menuwidth);
   position: fixed;
-  left: 0;
-  top: 0;
   z-index: 1000;
-  background: #f0f0f0;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+  background: var(--div-back-white);
+  border-radius: 10px;
+  box-shadow: var(--boxshadow-center);
+  transition: 0.3s ease;
 }
+#menu.collapsed {
+  transform: translateX(-100%);
+}
+
 #sidebar-toggle {
   position: fixed;
   top: 10px;
-  left: 210px;
+  left: calc(var(--menuwidth) + var(--menuoffset-left) + 10px);
   z-index: 1100;
-  background: #f0f0f0;
+  margin: 0px;
+  background: var(--div-back-white);
   border: none;
   padding: 5px 7px;
   font-size: 20px;
   cursor: pointer;
   border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: var(--boxshadow-center);
   transition: left 0.3s ease;
 }
 #sidebar {
@@ -41,25 +55,27 @@
 }
 
 #information {
-  width: 100%;
   padding: 10px;
-  z-index: 1000;
+  margin-bottom: 0px;
   box-sizing: border-box;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  text-align: center
+}
+#general-options {
+  padding: 10px;
+  text-align: center
 }
 
 #search-section {
   padding: 8px;
-  background: #f0f0f0;
+  background: var(--div-back-white);
 }
-#layer-search {
+#search-input {
   width: 100%;
   padding: 6px;
   font-size: 14px;
   border-radius: 4px;
-  border: 1px solid #f9f9f9;
+  border: 0px;
   box-sizing: border-box;
 }
 #search-results {
@@ -67,7 +83,7 @@
   display: none;
   flex-direction: column;
   padding: 10px;
-  background: #f9f9f9;
+  background: var(--div-back-white);
   z-index: 1050;
   max-height: 70vh;
   overflow-y: auto;
@@ -108,7 +124,7 @@
 .dropdown-toggle .sidemenu-toggle {
   padding: 5px;
   font-size: 12px;
-  color: #818181;
+  color: var(--textcolor-white);
   width: 100%;
   cursor: pointer;
 }
@@ -153,16 +169,16 @@
   padding: 2px 2px 2px 2px;
   display: none;
   flex-direction: column;
-  border-radius: 8px}
+  border-radius: 8px
+}
 
-/* LEFT pos needs to match the sidebar width */
 .popup-sidemenu {
-  position: fixed; /* changed from absolute */
-  left: 220px;     /* match sidebar width */
-  top: auto;       /* will be set dynamically in JS */
+  position: fixed;
+  left: calc(var(--menuwidth) + var(--menuoffset-left));    /* match sidebar width */
+  top: auto;
   width: fit-content;
   font-size: 14px;
-  background: #f0f0f0;
+  background: var(--div-back-white);
   padding: 0px 6px 0px 0px;
   display: none;
 
@@ -202,4 +218,9 @@
 .search-result input[type="checkbox"] {
   cursor: pointer;
   accent-color: #3388ff;
+}
+
+.general-options {
+  gap: 10px;
+  padding: 5px;
 }

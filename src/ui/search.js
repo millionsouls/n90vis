@@ -11,13 +11,13 @@
  * @param {Function} updateURLFromMapState 
  */
 function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
-  const searchInput = document.getElementById("layer-search");
+  const searchInput = document.getElementById("search-input");
   const resultsContainer = document.getElementById("search-results");
 
   // Position results container next to search input
   const rect = searchInput.getBoundingClientRect();
-  resultsContainer.style.top = `${rect.top - 8}px`;
-  resultsContainer.style.left = `${rect.left + searchInput.offsetWidth + 7}px`;
+  resultsContainer.style.top = `${rect.top - searchInput.offsetHeight}px`;
+  resultsContainer.style.left = `${rect.left + searchInput.offsetWidth - 2}px`;
 
   // Hide results on outside click
   document.body.addEventListener("click", (e) => {
@@ -71,7 +71,6 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
       cb.addEventListener("change", () => {
         if (!layer || !originalCheckbox) return;
-
         originalCheckbox.checked = cb.checked;
 
         if (cb.checked) {

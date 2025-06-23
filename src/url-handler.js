@@ -142,7 +142,7 @@ function getEnabledLayersFromURL() {
  */
 function updateURLFromMapState() {
   if (!window.LayerControl) return;
-  const enabled = window.LayerControl.getActiveLayerKeys();
+  const enabled = window.LayerControl.getActiveLayerKeys()
   const url = new URL(window.location);
 
   if (Object.keys(enabled).length > 0) {

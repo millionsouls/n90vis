@@ -8,8 +8,9 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+  <link rel="stylesheet" href="css/common.css" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/sidebar.css" />
+  <link rel="stylesheet" href="css/menu.css" />
   <link rel="stylesheet" href="css/layerinfo.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,21 +21,21 @@
 
 <body>
   <!-- Info box under cursor-->
-  <div id="hover-info-box"></div>
+  <div id="feature-info-box"></div>
   
   <!-- Sidebar -->
   <button id="sidebar-toggle">&#9776;</button> 
   <div id="menu">
-    <div id="information">
+    <div id="information" class="flex-center">
       <h4>ZNY TRACON Visualizer</h4>
-      <h5 style="color:red; text-align: center;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
-      <label>
-        <input type="checkbox" id="toggle-basemap" checked />
-        Show Basemap
-      </label>
+      <h5 style="color:red;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
+    </div>
+    <div id="general-options" class="flex-center">
+        <button type="button" id="toggle-basemap" class="btn">Toggle map</button>
+        <button type="button" id="reset-layers" class="btn">Reset all layers</button>
     </div>
     <div id="search-section">
-      <input type="text" id="layer-search" placeholder="Search">
+      <input type="text" id="search-input" placeholder="Search">
       <div id="search-results"></div>
     </div>
     <div id="sidebar"></div>
@@ -65,17 +66,18 @@
     </a>
   </footer>
 </body>
+
 <script>
     const toggleButton = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('menu');
 
     toggleButton.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
-      toggleButton.style.left = sidebar.classList.contains('collapsed') ? '10px' : '210px';
+      toggleButton.style.left = sidebar.classList.contains('collapsed') ? 'calc(var(--menuoffset-left) + 10px)' : 'calc(var(--menuwidth) + var(--menuoffset-left) + 10px)';
     });
 
     document.addEventListener("click", function (e) {
-      const searchBox = document.getElementById("layer-search");
+      const searchBox = document.getElementById("search-input");
       const resultsBox = document.getElementById("search-results");
 
       const clickedInside = searchBox.contains(e.target) || resultsBox.contains(e.target);

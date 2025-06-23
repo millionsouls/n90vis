@@ -4,14 +4,7 @@
  * only the devil knows what's going on here
  */
 
-let selectedFeature = null;
-let labelMarker = null;
-let videoLayer = null;
-
-let hoverInfoBox = document.getElementById('hover-info-box');
-let hoveredFeatures = [];
-let hoverLayers = [];
-let mouseMoveHandler = null;
+let featureInfoBox = document.getElementById('feature-info-box');
 
 import { map } from '../map.js';
 
@@ -40,9 +33,10 @@ function isColorTooBright(hexColor) {
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
+  
   // Relative luminance formula
   const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
-  return brightness > 210; // Adjust this threshold if needed
+  return brightness > 210;
 }
 
 function hexToRGBA(hex, alpha = 0.8) {
@@ -127,33 +121,33 @@ function buildFeatureInfoHTML(features) {
  * @param {*} event 
  * @returns 
  */
-function showHoverInfoBox(features, event) {
+function showfeatureInfoBox(features, event) {
   if (!features.length) {
-    hoverInfoBox.style.display = 'none';
+    featureInfoBox.style.display = 'none';
     return;
   }
 
-  hoverInfoBox.innerHTML = buildFeatureInfoHTML(features);
-  hoverInfoBox.style.display = 'block';
+  featureInfoBox.innerHTML = buildFeatureInfoHTML(features);
+  featureInfoBox.style.display = 'block';
 
   // Position box Southwest of cursor
   let x = event.originalEvent.clientX + 5;
   let y = event.originalEvent.clientY + 5;
-  let boxRect = hoverInfoBox.getBoundingClientRect();
+  let boxRect = featureInfoBox.getBoundingClientRect();
   let winW = window.innerWidth, winH = window.innerHeight;
 
   if (x + boxRect.width > winW) x = winW - boxRect.width ;
   if (y + boxRect.height > winH) y = winH - boxRect.height ;
 
-  hoverInfoBox.style.left = x + 'px';
-  hoverInfoBox.style.top = y + 'px';
+  featureInfoBox.style.left = x + 'px';
+  featureInfoBox.style.top = y + 'px';
 }
 
 /**
  * Remove hover info box on leaving a layer
  */
-function hideHoverInfoBox() {
-  hoverInfoBox.style.display = 'none';
+function hidefeatureInfoBox() {
+  featureInfoBox.style.display = 'none';
 }
 
 /**
@@ -194,7 +188,7 @@ function handleFeatureHover(feature, layer) {
 
   layer.on('mouseout', function () {
     mapContainer.classList.remove('hovering-feature');
-    hideHoverInfoBox();
+    hidefeatureInfoBox();
   });
 
   layer.on('mousemove', function (e) {
@@ -205,7 +199,7 @@ function handleFeatureHover(feature, layer) {
         featuresAtPoint.push(l.feature);
       }
     });
-    showHoverInfoBox(featuresAtPoint, e);
+    showfeatureInfoBox(featuresAtPoint, e);
   });
 }
 

@@ -1,8 +1,10 @@
 # ZNY TRACON Airspace Visualization
-Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additional options for displaying SIDs, STARs, and video maps. (I'm really bad at writing these)
+Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additional options for displaying SIDs, STARs, and video maps.
 
 <b>FOR FLIGHT SIMULATION PURPOSES ONLY</b>
 
+
+(I'm really bad at writing documentation)
 ## Installation
 ```
 Copy and run

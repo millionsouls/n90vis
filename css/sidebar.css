@@ -1,3 +1,15 @@
+#menu {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 200px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  background: #f0f0f0;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+}
 #sidebar-toggle {
   position: fixed;
   top: 10px;
@@ -10,18 +22,24 @@
   cursor: pointer;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: left 0.3s ease;
 }
 #sidebar {
-  height: 100vh;
-  width: 100%;
-  background: #f0f0f0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
   padding: 5px;
   box-sizing: border-box;
   position: relative;
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin;
 }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
 #information {
   width: 100%;
   padding: 10px;
@@ -139,8 +157,9 @@
 
 /* LEFT pos needs to match the sidebar width */
 .popup-sidemenu {
-  position: absolute;
-  left: 200px;
+  position: fixed; /* changed from absolute */
+  left: 220px;     /* match sidebar width */
+  top: auto;       /* will be set dynamically in JS */
   width: fit-content;
   font-size: 14px;
   background: #f0f0f0;
@@ -150,7 +169,7 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  z-index: 1100;
+  z-index: 2000;
 
   font-size: 12px;
 }

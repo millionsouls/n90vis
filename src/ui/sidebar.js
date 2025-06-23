@@ -72,7 +72,9 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
         });
 
         popup.style.display = popup.style.display === "none" ? "flex" : "none";
-        popup.style.top = `${groupDiv.offsetTop}px`;
+        // Calculate the top position relative to the viewport
+        const rect = groupDiv.getBoundingClientRect();
+        popup.style.top = `${rect.top}px`;
 
         e.stopPropagation();
       });

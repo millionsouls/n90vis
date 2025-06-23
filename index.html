@@ -72,11 +72,6 @@
     toggleButton.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
       toggleButton.style.left = sidebar.classList.contains('collapsed') ? '10px' : '210px';
-
-      // Force map resize after animation
-      setTimeout(() => {
-        if (window.map) window.map.invalidateSize();
-      }, 310);
     });
 
     document.addEventListener("click", function (e) {

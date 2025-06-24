@@ -3,27 +3,33 @@
  * 
  */
 
-const categoryAbbr = { 
-    sectors: 's', 
-    stars: 'sr', 
-    sids: 'ss', 
-    videomap: 'v' 
+const categoryAbbr = {
+    sectors: 1,
+    stars: 2,
+    sids: 3,
+    videomap: 4,
 };
-const categoryAbbrReverse = { 
-    s: 'sectors', 
-    sr: 'stars', 
-    ss: 'sids', 
-    v: 'videomap' 
+const categoryAbbrReverse = {
+    1: 'sectors',
+    2: 'stars',
+    3: 'sids',
+    4: 'videomap'
 };
 
 
-function base64UrlEncode(str) {
+function encBase64(str) {
     return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-function base64UrlDecode(str) {
+function decBase64(str) {
     str = str.replace(/-/g, '+').replace(/_/g, '/');
     while (str.length % 4) str += '=';
     return atob(str);
+}
+function compress(str) {
+    return LZString.compressToEncodedURIComponent(str);
+}
+function decompress(str) {
+    return LZString.decompressFromEncodedURIComponent(str);
 }
 
 /**
@@ -32,43 +38,26 @@ function base64UrlDecode(str) {
  * @param {*} layersNested 
  * @returns 
  */
-function encodeLayers(layersNested) {
-    // Build airport dict
-    const airports = Object.keys(layersNested).sort();
+function encodeLayers(data) {
+    // Build array of airport strings
+    const airportStrings = [];
 
-    // Unique layer names
-    const layerSet = new Set();
-    for (const airport of airports) {
-        const cats = layersNested[airport];
-        for (const cat in cats) {
-            cats[cat].forEach(name => layerSet.add(name));
+    Object.entries(data).forEach(([airport, categories]) => {
+        const catStrings = [];
+        for (const cat in categories) {
+            const abbr = categoryAbbr[cat];
+            if (!abbr) continue;
+            const layers = categories[cat];
+            if (!layers.length) continue;
+            catStrings.push(`${abbr}:${layers.map(l => l.toLowerCase()).join(',')}`);
         }
-    }
-    const layers = Array.from(layerSet).sort();
-
-    // Compose data entries: airport index, category abbr, layer index
-    // format: airportIdx:catAbbr:layerIdx
-    const entries = [];
-    airports.forEach((airport, aIdx) => {
-        const cats = layersNested[airport];
-        for (const cat in cats) {
-            const catAbbr = categoryAbbr[cat] || cat;
-            cats[cat].forEach(name => {
-                const lIdx = layers.indexOf(name);
-                if (lIdx >= 0) {
-                    entries.push(`${aIdx}:${catAbbr}:${lIdx}`);
-                }
-            });
-        }
+        if (catStrings.length === 0) return;
+        airportStrings.push(`${airport.toLowerCase()};${catStrings.join(';')}`);
     });
 
-    // Compose final string: "A:airports|L:layers|D:entries"
-    const airportsStr = airports.join(',');
-    const layersStr = layers.join(',');
-    const entriesStr = entries.join(';');
-
-    const compactStr = `A:${airportsStr}|L:${layersStr}|D:${entriesStr}`;
-    return base64UrlEncode(compactStr);
+    const compactStr = airportStrings.join('|');
+    console.log(compactStr)
+    return encBase64(compactStr);
 }
 
 /**
@@ -77,52 +66,42 @@ function encodeLayers(layersNested) {
  * @param {*} param 
  * @returns 
  */
-function decodeLayers(param) {
-    if (!param) return {};
+function decodeLayers(encoded) {
+  if (!encoded) return {};
 
-    try {
-        const decoded = base64UrlDecode(param);
-        // decoded looks like "A:jfk,lax|L:4s,31s,parch3|D:0:s:0;0:st:2"
-        const parts = decoded.split('|');
-        if (parts.length !== 3) return {};
+  try {
+    const decoded = decBase64(encoded);
+    // Example decoded: "jfk;s:n2a,n2m;ss:sid1,sid2|lga;s:n1a;sr:star1"
 
-        const airportsPart = parts[0];
-        const layersPart = parts[1];
-        const dataPart = parts[2];
+    const airportsArr = decoded.split('|');
+    const result = {};
 
-        if (!airportsPart.startsWith('A:') || !layersPart.startsWith('L:') || !dataPart.startsWith('D:')) {
-            return {};
+    airportsArr.forEach(airportStr => {
+      const parts = airportStr.split(';');
+      const airport = parts[0];
+      if (!airport) return;
+
+      result[airport] = {};
+
+      parts.slice(1).forEach(catPart => {
+        const [catAbbr, layerStr] = catPart.split(':');
+        if (!catAbbr || !layerStr) return;
+        const cat = categoryAbbrReverse[catAbbr];
+        if (!cat) return;
+
+        const layers = layerStr.split(',').filter(Boolean);
+        if (layers.length) {
+          result[airport][cat] = layers;
         }
+      });
+    });
 
-        const airports = airportsPart.slice(2).split(',');
-        const layers = layersPart.slice(2).split(',');
-        const entries = dataPart.slice(2).split(';');
-
-        const result = {};
-
-        entries.forEach(entry => {
-            if (!entry) return;
-            const [aIdxStr, catAbbr, lIdxStr] = entry.split(':');
-            const aIdx = parseInt(aIdxStr, 10);
-            const lIdx = parseInt(lIdxStr, 10);
-
-            if (aIdx >= airports.length || lIdx >= layers.length) return;
-
-            const airport = airports[aIdx];
-            const cat = categoryAbbrReverse[catAbbr] || catAbbr;
-            const layerName = layers[lIdx];
-
-            if (!result[airport]) result[airport] = {};
-            if (!result[airport][cat]) result[airport][cat] = [];
-            result[airport][cat].push(layerName);
-        });
-
-        return result;
-    } catch {
-        return {};
-    }
+    return result;
+  } catch (err) {
+    console.error('decodeLayers error:', err);
+    return {};
+  }
 }
-
 /**
  * Extract URL and decode it
  * 
@@ -141,15 +120,15 @@ function getEnabledLayersFromURL() {
  * @returns 
  */
 function updateURLFromMapState() {
-  if (!window.LayerControl) return;
-  const enabled = window.LayerControl.getActiveLayerKeys()
-  const url = new URL(window.location);
+    if (!window.LayerControl) return;
+    const enabled = window.LayerControl.getActiveLayerKeys()
+    const url = new URL(window.location);
 
-  if (Object.keys(enabled).length > 0) {
-    url.searchParams.set("l", encodeLayers(enabled));
-  } else {
-    url.searchParams.delete("l");
-  }
-  history.replaceState(null, "", url);
+    if (Object.keys(enabled).length > 0) {
+        url.searchParams.set("l", encodeLayers(enabled));
+    } else {
+        url.searchParams.delete("l");
+    }
+    history.replaceState(null, "", url);
 }
 export { getEnabledLayersFromURL, updateURLFromMapState };

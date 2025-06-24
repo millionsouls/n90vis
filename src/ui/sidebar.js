@@ -32,7 +32,26 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
     const container = document.createElement("div");
     container.className = "dropdown-container";
 
-    Object.entries(categories).forEach(([categoryLabel, names]) => {
+    Object.entries(categories).forEach(([categoryLabel, namesOrObject]) => {
+      let names;
+
+      // Detect if sectors are stored as nested object (new structure)
+      if (
+        categoryLabel === 'sectors' &&
+        namesOrObject &&
+        typeof namesOrObject === 'object' &&
+        !Array.isArray(namesOrObject)
+      ) {
+        // Get file names (keys)
+        names = Object.keys(namesOrObject);
+      } else if (Array.isArray(namesOrObject)) {
+        // Legacy flat array structure
+        names = namesOrObject;
+      } else {
+        // Unexpected data structure, skip this category
+        return;
+      }
+
       if (!names.length) return;
 
       const groupDiv = document.createElement("div");
@@ -51,16 +70,76 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
         div.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${name}</label>`;
         popup.appendChild(div);
 
-        div.querySelector("input").addEventListener("change", function () {
-          const layer = GEOLAYERS[airport]?.[categoryLabel]?.[name];
-          if (!layer) return;
+        if (categoryLabel === 'sectors') {
+          const positionLayers = GEOLAYERS[airport]?.[categoryLabel]?.[name];
+          if (typeof positionLayers === 'object') {
+            const rightbar = document.getElementById("rightbar");
 
-          if (this.checked) {
-            map.addLayer(layer);
-          } else {
-            map.removeLayer(layer);
+            // Create a container for this sector's positions
+            const containerId = `rightbar-${airport}-${categoryLabel}-${name}`;
+            const positionContainer = document.createElement("div");
+            positionContainer.id = containerId;
+            positionContainer.style.display = "none"; // Hidden by default
+            positionContainer.style.marginBottom = "10px";
+
+            const header = document.createElement("div");
+            header.className = "position-header";
+            header.innerText = `${airport} ${name}`;
+            positionContainer.appendChild(header);
+
+            Object.entries(positionLayers).forEach(([positionName, layer]) => {
+              const posId = `toggle-${airport}${categoryLabel}${name}${positionName}`;
+              const div = document.createElement("div");
+              div.innerHTML = `<input type="checkbox" id="${posId}" checked> <label for="${posId}">${positionName}</label>`;
+              positionContainer.appendChild(div);
+
+              div.querySelector("input").addEventListener("change", function () {
+                if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
+                  if (!this.checked) {
+                    map.removeLayer(layer);
+                  } else {
+                    map.addLayer(layer);
+                  }
+                  updateURLFromMapState();
+                }
+              });
+            });
+
+            rightbar.appendChild(positionContainer);
+
+            // Modify the parent sector checkbox listener to toggle the container
+            const sectorCheckbox = div.querySelector("input");
+            sectorCheckbox.addEventListener("change", function () {
+              positionContainer.style.display = this.checked ? "block" : "none";
+            });
           }
-          
+        }
+
+
+        div.querySelector("input").addEventListener("change", function () {
+          const entry = GEOLAYERS[airport]?.[categoryLabel]?.[name];
+          if (!entry) return;
+
+          // If the entry is a single Leaflet Layer or LayerGroup (legacy or videomap, stars, sids)
+          if (entry instanceof L.Layer || entry instanceof L.LayerGroup) {
+            if (this.checked) {
+              map.addLayer(entry);
+            } else {
+              map.removeLayer(entry);
+            }
+          }
+          // If entry is an object of position-layer groups (sectors)
+          else if (typeof entry === 'object') {
+            Object.values(entry).forEach(layer => {
+              if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
+                if (this.checked) {
+                  map.addLayer(layer);
+                } else {
+                  map.removeLayer(layer);
+                }
+              }
+            });
+          }
           updateURLFromMapState();
         });
       });

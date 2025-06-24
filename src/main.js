@@ -14,39 +14,69 @@ window.LayerControl = {
     const active = {};
     Object.entries(GEOLAYERS).forEach(([airport, catObj]) => {
       Object.entries(catObj).forEach(([category, namesObj]) => {
-        Object.keys(namesObj).forEach(name => {
-          const id = `toggle-${airport}${category}${name}`
-          const checkbox = document.getElementById(id)
+        Object.entries(namesObj).forEach(([name, layerOrObj]) => {
+          const id = `toggle-${airport}${category}${name}`;
+          const checkbox = document.getElementById(id);
 
           if (checkbox && checkbox.checked) {
-            if (!active[airport]) active[airport] = {}
-            if (!active[airport][category]) active[airport][category] = []
+            if (!active[airport]) active[airport] = {};
+            if (!active[airport][category]) active[airport][category] = category === 'sectors' ? {} : [];
 
-            active[airport][category].push(name)
+            if (category === 'sectors') {
+              // layerOrObj is an object: positions => layers
+              active[airport][category][name] = Object.keys(layerOrObj);
+            } else {
+              active[airport][category].push(name);
+            }
           }
         });
       });
     });
-
-    return active
+    return active;
   },
 
+
   setActiveLayers: (active) => {
-    console.log(GEOLAYERS)
     Object.entries(GEOLAYERS).forEach(([airport, catObj]) => {
       Object.entries(catObj).forEach(([category, namesObj]) => {
-        Object.entries(namesObj).forEach(([name, layer]) => {
-          const id = `toggle-${airport}${category}${name}`
-          const checkbox = document.getElementById(id)
+        Object.entries(namesObj).forEach(([name, layerOrObj]) => {
+          const id = `toggle-${airport}${category}${name}`;
+          const checkbox = document.getElementById(id);
+          if (!checkbox) return;
 
-          if (!checkbox) return
-          const shouldEnable = active[airport]?.[category]?.includes(name)
-          checkbox.checked = !!shouldEnable
+          const activeCategory = active[airport]?.[category];
+          let shouldEnable = false;
+
+          if (Array.isArray(activeCategory)) {
+            shouldEnable = activeCategory.includes(name);
+          } else if (typeof activeCategory === 'object' && activeCategory !== null) {
+            shouldEnable = name in activeCategory;
+          }
+
+          checkbox.checked = !!shouldEnable;
 
           if (shouldEnable) {
-            map.addLayer(layer)
+            if (layerOrObj instanceof L.LayerGroup) {
+              map.addLayer(layerOrObj);
+            } else if (typeof layerOrObj === 'object' && layerOrObj !== null) {
+              // add all position layers for this sector
+              Object.values(layerOrObj).forEach(layer => {
+                if (layer instanceof L.Layer) {
+                  map.addLayer(layer);
+                }
+              });
+            }
           } else {
-            map.removeLayer(layer)
+            if (layerOrObj instanceof L.LayerGroup) {
+              map.removeLayer(layerOrObj);
+            } else if (typeof layerOrObj === 'object' && layerOrObj !== null) {
+              // remove all position layers for this sector
+              Object.values(layerOrObj).forEach(layer => {
+                if (layer instanceof L.Layer) {
+                  map.removeLayer(layer);
+                }
+              });
+            }
           }
         });
       });
@@ -58,6 +88,9 @@ loadGeoFiles(GEOFILES, map).then(({ GEODATA, GEOLAYERS }) => {
   buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState)
   attachSidebarListeners(document.getElementById("sidebar"))
   setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState)
+
+  console.log(GEODATA)
+  console.log(GEOLAYERS)
 
   // Load layers from url if any
   const enabledLayers = getEnabledLayersFromURL();

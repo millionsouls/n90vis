@@ -54,55 +54,51 @@ function hexToRGBA(hex, alpha = 0.8) {
  * @returns 
  */
 function buildFeatureInfoHTML(features) {
-  // Group by Position
   const grouped = {};
+
+  // Step 1: Group features by Position
   features.forEach(f => {
     const pos = f.properties.Position || '';
     if (!grouped[pos]) grouped[pos] = [];
     grouped[pos].push(f);
   });
 
-  return Object.entries(grouped).map(([pos, feats]) => {
-    // Collect unique low/high pairs
-    const altRows = feats.map(f => {
-      const low = f.properties.Low ?? '';
-      const high = f.properties.High ?? '';
+  // Step 2: Build data for each group
+  const groupBlocks = Object.entries(grouped).map(([pos, feats]) => {
+    const altSet = new Set();
+    const altRows = [];
 
-      // Format numbers
-      const lowFmt = formatAlt(low);
-      const highFmt = formatAlt(high);
-      if (low === high) {
-        return { low: lowFmt, high: '' };
-      } else {
-        return { low: lowFmt, high: highFmt };
+    feats.forEach(f => {
+      const lowRaw = f.properties.Low ?? '';
+      const highRaw = f.properties.High ?? '';
+      const lowFmt = formatAlt(lowRaw);
+      const highFmt = (lowRaw === highRaw) ? '' : formatAlt(highRaw);
+
+      const key = `${lowFmt}|${highFmt}`;
+      if (!altSet.has(key)) {
+        altSet.add(key);
+        altRows.push({ low: lowFmt, high: highFmt });
       }
     });
 
-    // Remove duplicates
-    const uniqueAltRows = [];
-    const seen = new Set();
-    altRows.forEach(row => {
-      const key = `${row.low}|${row.high}`;
-      if (!seen.has(key)) {
-        uniqueAltRows.push(row);
-        seen.add(key);
-      }
+    // Step 3: Sort altitudes within the group
+    altRows.sort((a, b) => {
+      const parse = v => v === 'SFC' ? 0 : parseInt(v, 10) || 0;
+      return parse(a.low) - parse(b.low);
     });
 
-    // Notes UNUSED
-    // ${notes ? `<div class="notes" style="margin-bottom:4px;">${notes}</div>` : ''}
-    const notes = feats.map(f => f.properties.Notes).filter(Boolean).join('\n');
-
-    // Color text using layer color
+    // Step 4: Determine the group's sorting key (min altitude)
+    const minLow = Math.min(...altRows.map(r => r.low === 'SFC' ? 0 : parseInt(r.low, 10) || 0));
     const color = feats[0].properties.Fill || "#222";
     const isBright = isColorTooBright(color);
     const textColor = isBright ? '#000' : '#fff';
 
-    return `
+    // Step 5: Build final HTML string for the group
+    const html = `
       <div class="feature-info-row" style="background:${color}; color:${textColor}; padding: 4px; border-radius: 4px;">
         <div class="feature-info-pos">${pos}</div>
         <div>
-          ${uniqueAltRows.map(row => `
+          ${altRows.map(row => `
             <div style="display:flex;">
               <div class="feature-info-low" style="flex:1;">${row.low}</div>
               <div class="feature-info-high" style="flex:1;">${row.high}</div>
@@ -111,8 +107,18 @@ function buildFeatureInfoHTML(features) {
         </div>
       </div>
     `;
-  }).join('');
+
+    return { html, minLow };
+  });
+
+  // Step 6: Sort all position groups by their minLow across the board
+  groupBlocks.sort((a, b) => a.minLow - b.minLow);
+
+  // Step 7: Output joined HTML
+  return groupBlocks.map(g => g.html).join('');
 }
+
+
 
 /**
  * Show the info box when over a layer

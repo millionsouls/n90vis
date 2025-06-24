@@ -15,7 +15,7 @@ const categoryAbbrReverse = {
     3: 'sids',
     4: 'videomap'
 };
-
+const includePositions = true;
 
 function encBase64(str) {
     return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -39,25 +39,57 @@ function decompress(str) {
  * @param {*} layersNested 
  * @returns 
  */
+
 function encodeLayers(data) {
-    // Build array of airport strings
     const airportStrings = [];
 
     Object.entries(data).forEach(([airport, categories]) => {
         const catStrings = [];
+
         for (const cat in categories) {
             const abbr = categoryAbbr[cat];
             if (!abbr) continue;
+
             const layers = categories[cat];
-            if (!layers.length) continue;
-            catStrings.push(`${abbr}:${layers.map(l => l).join(',')}`);
+            if (!layers) continue;
+
+            if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
+                const sectorStrings = [];
+                Object.entries(layers).forEach(([filename, positions]) => {
+                    if (!positions || positions.length === 0) {
+                        if (!includePositions) {
+                            // Option B: just filename, no positions
+                            sectorStrings.push(filename);
+                        }
+                        // else skip empty positions in Option A mode
+                        return;
+                    }
+
+                    if (includePositions) {
+                        // Option A: encode with positions
+                        sectorStrings.push(`${filename}.${positions.join(',')}`);
+                    } else {
+                        // Option B: just filenames (positions ignored)
+                        sectorStrings.push(filename);
+                    }
+                });
+
+                if (sectorStrings.length > 0) {
+                    catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
+                }
+            } else if (Array.isArray(layers)) {
+                // legacy flat array for other categories
+                if (layers.length > 0) {
+                  catStrings.push(`${abbr}:${layers.join(',')}`);
+                }
+            }
         }
+
         if (catStrings.length === 0) return;
         airportStrings.push(`${airport};${catStrings.join(';')}`);
     });
 
     const compactStr = airportStrings.join('|');
-    //console.log(compactStr)
     return encBase64(compactStr);
 }
 
@@ -74,11 +106,10 @@ function decodeLayers(encoded) {
     const decoded = decBase64(encoded);
     const airportsArr = decoded.split('|');
     const result = {};
-    console.log(decoded)
 
     airportsArr.forEach(airportStr => {
-      const parts = airportStr.split(';')
-      const airport = parts[0]
+      const parts = airportStr.split(';');
+      const airport = parts[0];
       if (!airport) return;
 
       result[airport] = {};
@@ -89,20 +120,40 @@ function decodeLayers(encoded) {
         const cat = categoryAbbrReverse[catAbbr];
         if (!cat) return;
 
-        const layers = layerStr.split(',').filter(Boolean);
-        if (layers.length) {
-          result[airport][cat] = layers;
+        if (cat === 'sectors') {
+          const sectorEntries = layerStr.split('|').filter(Boolean);
+          const sectorObj = {};
+
+          sectorEntries.forEach(entry => {
+            if (entry.includes('.')) {
+              const [filename, posStr] = entry.split('.');
+              const positions = posStr.split(',').filter(Boolean);
+              sectorObj[filename] = positions;
+            } else {
+              // no positions given, just a filename
+              sectorObj[entry] = [];
+            }
+          });
+
+          if (Object.keys(sectorObj).length > 0) {
+            result[airport][cat] = sectorObj;
+          }
+        } else {
+          const layers = layerStr.split(',').filter(Boolean);
+          if (layers.length) {
+            result[airport][cat] = layers;
+          }
         }
       });
     });
 
-    console.log(result)
     return result;
   } catch (err) {
     console.error('URL Decode error:', err);
     return {};
   }
 }
+
 /**
  * Extract URL on page load and decode it
  * 

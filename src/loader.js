@@ -19,28 +19,28 @@ const GEOLAYERS = {};
 const fetchPromises = [];
 
 /**
- * GEODATA = {
- *  JFK: {
- *    sectors: [...],
- *    sids: [...],
- *    stars: [...],
- *    videomap: [...]
- *  },
- *  LGA: {
- *    ...
- *   }
- * }
- * 
- * GEOLAYERS = {
- *  JFK: {
- *    sectors: {
- *      4s: L.LayerGroup(...),
- *    },
- *    stars: {
- *      lendy6: L.LayerGroup(...)
- *    },
- *  },
- * }
+   GEODATA = {
+    JFK: {
+      sectors: [...],
+      sids: [...],
+      stars: [...],
+      videomap: [...]
+    },
+    LGA: {
+      ...
+     }
+   }
+   
+   GEOLAYERS = {
+    JFK: {
+      sectors: {
+        4s: L.LayerGroup(...),
+      },
+      stars: {
+        lendy6: L.LayerGroup(...)
+      },
+    },
+   }
  */
 
 
@@ -54,7 +54,7 @@ const fetchPromises = [];
 function loadGeoFiles(GEOFILES, map) {
   Object.entries(GEOFILES).forEach(([key, fileArray]) => {
     const upperKey = key.toUpperCase();
-    GEODATA[upperKey] = { sectors: [], stars: [], sids: [], videomap: [] };
+    GEODATA[upperKey] = { sectors: {}, stars: [], sids: [], videomap: [] };
 
     fileArray.forEach(file => {
       const fileName = file.split("/")
@@ -126,7 +126,13 @@ function loadGeoFiles(GEOFILES, map) {
             const linesGroup = L.layerGroup(lines);
             const markersGroup = L.layerGroup(markers);
             group = L.layerGroup([linesGroup, markersGroup]);
+            if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
+            if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
+            GEOLAYERS[upperKey][category][name] = group;
 
+            if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
+            if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
+            GEODATA[upperKey][category].push(name);
           } else if (category === "videomap") {
             /**
              * Videomaps
@@ -145,47 +151,71 @@ function loadGeoFiles(GEOFILES, map) {
             });
 
             group = L.layerGroup([geoJsonLayer]);
+            if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
+            if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
+            GEOLAYERS[upperKey][category][name] = group;
+
+            if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
+            if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
+            GEODATA[upperKey][category].push(name);
           } else {
             /**
-             * Airspace/Areas/Sectors
-             */
+              * Airspace/Areas/Sectors
+              * Group each feature by its `Position` and create a LayerGroup per Position.
+              */
             const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
-            const fileSafe = `${upperKey}_${category}_${name}`.replace(/[^\w]/g, '');
-            const paneName = `pane-${fileSafe}`;
-            if (!map.getPane(paneName)) {
-              map.createPane(paneName);
-            }
-            map.getPane(paneName).style.zIndex = 200 + zIndex;
 
-            const geoJsonLayer = L.geoJSON(data, {
-              pane: paneName,
-              style: feature => {
-                const color = feature.properties.Fill || "#3388ff";
-                return {
+            const featureGroupsByPosition = {};
+
+            data.features.forEach(feature => {
+              const position = feature.properties?.Position || "UNKNOWN";
+              const color = feature.properties?.Fill || "#3388ff";
+
+              const positionSafe = `${upperKey}_${category}_${name}_${position}`.replace(/[^\w]/g, '');
+              const paneName = `pane-${positionSafe}`;
+              if (!map.getPane(paneName)) {
+                map.createPane(paneName);
+                map.getPane(paneName).style.zIndex = 200 + zIndex;
+              }
+
+              const geoJsonLayer = L.geoJSON(feature, {
+                pane: paneName,
+                style: {
                   color: color,
                   weight: 2,
                   opacity: 1,
                   fillColor: color,
                   fillOpacity: 0.6
-                };
-              },
-              onEachFeature: (feature, layer) => {
-                if (typeof handleFeatureHover === "function") {
-                  handleFeatureHover(feature, layer);
+                },
+                onEachFeature: (feature, layer) => {
+                  if (typeof handleFeatureHover === "function") {
+                    handleFeatureHover(feature, layer);
+                  }
                 }
+              });
+
+              if (!featureGroupsByPosition[position]) {
+                featureGroupsByPosition[position] = [];
               }
+              featureGroupsByPosition[position].push(geoJsonLayer);
             });
 
-            group = L.layerGroup([geoJsonLayer]);
+            // Create LayerGroups per position
+            const positionGroups = {};
+            Object.entries(featureGroupsByPosition).forEach(([position, layers]) => {
+              positionGroups[position] = L.layerGroup(layers);
+            });
+
+            // Save to GEOLAYERS
+            if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
+            if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
+            GEOLAYERS[upperKey][category][name] = positionGroups;
+
+            // Save to GEODATA
+            if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
+            if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = {};
+            GEODATA[upperKey][category][name] = Object.keys(positionGroups);
           }
-
-          if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
-          if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
-          GEOLAYERS[upperKey][category][name] = group;
-
-          if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
-          if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
-          GEODATA[upperKey][category].push(name);
         })
         .catch(err => {
           console.error(`Failed to load ${file}:`, err);

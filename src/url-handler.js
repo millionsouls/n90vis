@@ -33,7 +33,8 @@ function decompress(str) {
 }
 
 /**
- * Transforms dictionary into custom encoded dictionary
+ * Transforms dictionary into custom encoded string
+ * ex: jfk;1:4l-4r;2:parch3;4:combined|ewr;1:southwest;2:fqm3,phlbo4
  * 
  * @param {*} layersNested 
  * @returns 
@@ -49,19 +50,19 @@ function encodeLayers(data) {
             if (!abbr) continue;
             const layers = categories[cat];
             if (!layers.length) continue;
-            catStrings.push(`${abbr}:${layers.map(l => l.toLowerCase()).join(',')}`);
+            catStrings.push(`${abbr}:${layers.map(l => l).join(',')}`);
         }
         if (catStrings.length === 0) return;
-        airportStrings.push(`${airport.toLowerCase()};${catStrings.join(';')}`);
+        airportStrings.push(`${airport};${catStrings.join(';')}`);
     });
 
     const compactStr = airportStrings.join('|');
-    console.log(compactStr)
+    //console.log(compactStr)
     return encBase64(compactStr);
 }
 
 /**
- * Decoding custom encode into readable dictionary
+ * Decode string into readable dictionary
  * 
  * @param {*} param 
  * @returns 
@@ -71,14 +72,13 @@ function decodeLayers(encoded) {
 
   try {
     const decoded = decBase64(encoded);
-    // Example decoded: "jfk;s:n2a,n2m;ss:sid1,sid2|lga;s:n1a;sr:star1"
-
     const airportsArr = decoded.split('|');
     const result = {};
+    console.log(decoded)
 
     airportsArr.forEach(airportStr => {
-      const parts = airportStr.split(';');
-      const airport = parts[0];
+      const parts = airportStr.split(';')
+      const airport = parts[0]
       if (!airport) return;
 
       result[airport] = {};
@@ -96,20 +96,22 @@ function decodeLayers(encoded) {
       });
     });
 
+    console.log(result)
     return result;
   } catch (err) {
-    console.error('decodeLayers error:', err);
+    console.error('URL Decode error:', err);
     return {};
   }
 }
 /**
- * Extract URL and decode it
+ * Extract URL on page load and decode it
  * 
  * @returns 
  */
 function getEnabledLayersFromURL() {
     const params = new URLSearchParams(window.location.search);
     const layerParam = params.get("l");
+
     if (!layerParam) return {};
     return decodeLayers(layerParam);
 }
@@ -121,7 +123,7 @@ function getEnabledLayersFromURL() {
  */
 function updateURLFromMapState() {
     if (!window.LayerControl) return;
-    const enabled = window.LayerControl.getActiveLayerKeys()
+    const enabled = window.LayerControl.getActiveLayers()
     const url = new URL(window.location);
 
     if (Object.keys(enabled).length > 0) {
@@ -131,4 +133,5 @@ function updateURLFromMapState() {
     }
     history.replaceState(null, "", url);
 }
+
 export { getEnabledLayersFromURL, updateURLFromMapState };

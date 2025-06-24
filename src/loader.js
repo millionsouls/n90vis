@@ -1,9 +1,10 @@
 /**
- * dataloader.js
+ * loader.js
  * 
  * Loads geojson files
  */
-import { handleConstraints, buildMarkerHTML } from './constraints.js';
+
+import { buildConstraints, buildMarker } from './constraints.js';
 import { handleFeatureHover } from './ui/mouse-hover.js';
 
 const categoryMap = {
@@ -18,6 +19,32 @@ const GEOLAYERS = {};
 const fetchPromises = [];
 
 /**
+ * GEODATA = {
+ *  JFK: {
+ *    sectors: [...],
+ *    sids: [...],
+ *    stars: [...],
+ *    videomap: [...]
+ *  },
+ *  LGA: {
+ *    ...
+ *   }
+ * }
+ * 
+ * GEOLAYERS = {
+ *  JFK: {
+ *    sectors: {
+ *      4s: L.LayerGroup(...),
+ *    },
+ *    stars: {
+ *      lendy6: L.LayerGroup(...)
+ *    },
+ *  },
+ * }
+ */
+
+
+/**
  * Loads GEOJSON files, creates Leaflet layers and populates GEODATA, GEOLAYERS
  * 
  * @param {Object} GEOFILES - Files config
@@ -30,8 +57,9 @@ function loadGeoFiles(GEOFILES, map) {
     GEODATA[upperKey] = { sectors: [], stars: [], sids: [], videomap: [] };
 
     fileArray.forEach(file => {
-      const prefix = file.split("/")[0].toLowerCase();
-      const category = categoryMap[prefix];
+      const fileName = file.split("/")
+      const category = fileName[0]
+      //const category = categoryMap[prefix];
       if (!category) return;
 
       const fetchPromise = fetch(`data/${key}/${file}`)
@@ -42,16 +70,17 @@ function loadGeoFiles(GEOFILES, map) {
         .then(data => {
           if (!data.features) throw new Error('Invalid GeoJSON: missing features');
 
-          const rawFileName = file.split("/").pop().split('.')[0];
-          const name = data.name || rawFileName;
-          const normalizedName = name.toLowerCase().replace(/[^\w\-]/g, '');
-          const normalizedCategory = category.toLowerCase();
+          const name = data.name || fileName.pop().split('.')[0];
+          //const name = name.toLowerCase().replace(/[^\w\-]/g, '');
 
           let group;
-          if (category === "STARs" || category === "SIDs") {
-            const fileSafe = `${upperKey}_${category}_${normalizedName}`.replace(/[^\w]/g, '');
-            const linePane = `pane-${normalizedCategory}-lines-${fileSafe}`;
-            const markerPane = `pane-${normalizedCategory}-markers-${fileSafe}`;
+          if (category === "stars" || category === "sids") {
+            /**
+             * Procedures
+             */
+            const fileSafe = `${upperKey}_${category}_${name}`.replace(/[^\w]/g, '');
+            const linePane = `pane-${category}-lines-${fileSafe}`;
+            const markerPane = `pane-${category}-markers-${fileSafe}`;
             if (!map.getPane(linePane)) {
               map.createPane(linePane);
               map.getPane(linePane).style.zIndex = 800;
@@ -70,18 +99,17 @@ function loadGeoFiles(GEOFILES, map) {
 
               if (f.geometry.type === "Point") {
                 const coords = f.geometry.coordinates;
-                const altitudes = handleConstraints(props.altitudes);
-                const speeds = handleConstraints(props.speed);
+                const altitudes = buildConstraints(props.altitudes);
+                const speeds = buildConstraints(props.speed);
 
                 const marker = L.marker([coords[1], coords[0]], {
                   pane: markerPane,
                   icon: L.divIcon({
                     className: 'procedure-icon',
-                    html: buildMarkerHTML(props.id, altitudes, speeds, color),
+                    html: buildMarker(props.id, altitudes, speeds, color),
                     iconAnchor: [6, 6]
                   })
                 });
-
                 markers.push(marker);
 
               } else if (f.geometry.type === "LineString") {
@@ -99,29 +127,30 @@ function loadGeoFiles(GEOFILES, map) {
             const markersGroup = L.layerGroup(markers);
             group = L.layerGroup([linesGroup, markersGroup]);
 
-          } else if (category === "Videomap") {
+          } else if (category === "videomap") {
+            /**
+             * Videomaps
+             */
             const videoStyle = feature => {
               if (feature.geometry.type === "LineString") {
-                return { color: "#000000", weight: 2 };
-              }
-              if (feature.geometry.type === "Polygon") {
-                return { color: "#000000", weight: 2, fillOpacity: 0.1 };
+                return { color: "#000000", weight: 1 };
               }
               return {};
             };
 
             const videoPointToLayer = () => null;
-
             const geoJsonLayer = L.geoJSON(data, {
               style: videoStyle,
               pointToLayer: videoPointToLayer
             });
 
             group = L.layerGroup([geoJsonLayer]);
-
           } else {
+            /**
+             * Airspace/Areas/Sectors
+             */
             const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
-            const fileSafe = `${upperKey}_${category}_${normalizedName}`.replace(/[^\w]/g, '');
+            const fileSafe = `${upperKey}_${category}_${name}`.replace(/[^\w]/g, '');
             const paneName = `pane-${fileSafe}`;
             if (!map.getPane(paneName)) {
               map.createPane(paneName);
@@ -151,12 +180,12 @@ function loadGeoFiles(GEOFILES, map) {
           }
 
           if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
-          if (!GEOLAYERS[upperKey][normalizedCategory]) GEOLAYERS[upperKey][normalizedCategory] = {};
-          GEOLAYERS[upperKey][normalizedCategory][normalizedName] = group;
+          if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
+          GEOLAYERS[upperKey][category][name] = group;
 
           if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
-          if (!GEODATA[upperKey][normalizedCategory]) GEODATA[upperKey][normalizedCategory] = [];
-          GEODATA[upperKey][normalizedCategory].push(normalizedName);
+          if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
+          GEODATA[upperKey][category].push(name);
         })
         .catch(err => {
           console.error(`Failed to load ${file}:`, err);

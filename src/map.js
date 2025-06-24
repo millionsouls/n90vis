@@ -56,6 +56,7 @@ map.on('baselayerchange', function(e) {
   basemapVisible = true;
 });
 
+// Toggles visibility of OSM map
 document.getElementById('toggle-basemap').addEventListener('click', function () {
   basemapVisible = !basemapVisible;
 
@@ -67,6 +68,7 @@ document.getElementById('toggle-basemap').addEventListener('click', function () 
     });
   }
 });
+// Resets all toggled map layers/features to off
 document.getElementById('reset-layers').addEventListener('click', function () {
   Object.entries(GEOLAYERS).forEach(([airport, categoryObj]) => {
     Object.entries(categoryObj).forEach(([category, subCategoryObj]) => {

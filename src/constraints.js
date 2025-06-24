@@ -10,7 +10,7 @@
  * @param {Array<string>} constraints - Array of constraint strings
  * @returns {Array<[string, string]>} - Array of [prefix, value] pairs
  */
-function handleConstraints(constraints) {
+function buildConstraints(constraints) {
   if (!Array.isArray(constraints)) return [];
 
   const parsed = constraints.map(raw => {
@@ -69,7 +69,7 @@ function isColorTooBright(hexColor) {
  * @param {string} color 
  * @returns {string}
  */
-function buildMarkerHTML(id, altitudes, speeds, color) {
+function buildMarker(id, altitudes, speeds, color) {
   // Altitude HTML
   const isBright = isColorTooBright(color);
   const adjColor = isBright ? '#000' : '#fff';
@@ -122,4 +122,4 @@ function buildMarkerHTML(id, altitudes, speeds, color) {
   `;
 }
 
-export { handleConstraints, buildMarkerHTML };
+export { buildConstraints, buildMarker };

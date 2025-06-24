@@ -37,7 +37,7 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
       const groupDiv = document.createElement("div");
       groupDiv.className = "sidemenu-toggle";
-      const displayName = categoryMap[categoryLabel.toLowerCase()] || categoryLabel;
+      const displayName = categoryMap[categoryLabel] || categoryLabel;
       groupDiv.innerHTML = `<span>${displayName}</span><i class="fa fa-caret-right"></i>`;
 
       const popup = document.createElement("div");
@@ -48,7 +48,7 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
         const id = `toggle-${airport}${categoryLabel}${name}`;
 
         const div = document.createElement("div");
-        div.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${name.toUpperCase()}</label>`;
+        div.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${name}</label>`;
         popup.appendChild(div);
 
         div.querySelector("input").addEventListener("change", function () {
@@ -66,7 +66,7 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
       });
 
       groupDiv.addEventListener("click", e => {
-        // Close other popups
+        // Close other popups first
         sidebar.querySelectorAll(".popup-sidemenu").forEach(p => {
           if (p !== popup) p.style.display = "none";
         });

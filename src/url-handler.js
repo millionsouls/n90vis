@@ -41,56 +41,55 @@ function decompress(str) {
  */
 
 function encodeLayers(data) {
-    const airportStrings = [];
+  const airportStrings = [];
 
-    Object.entries(data).forEach(([airport, categories]) => {
-        const catStrings = [];
+  Object.entries(data).forEach(([airport, categories]) => {
+    const catStrings = [];
 
-        for (const cat in categories) {
-            const abbr = categoryAbbr[cat];
-            if (!abbr) continue;
+    for (const cat in categories) {
+      const abbr = categoryAbbr[cat];
+      if (!abbr) continue;
 
-            const layers = categories[cat];
-            if (!layers) continue;
+      const layers = categories[cat];
+      if (!layers) continue;
 
-            if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
-                const sectorStrings = [];
-                Object.entries(layers).forEach(([filename, positions]) => {
-                    if (!positions || positions.length === 0) {
-                        if (!includePositions) {
-                            // Option B: just filename, no positions
-                            sectorStrings.push(filename);
-                        }
-                        // else skip empty positions in Option A mode
-                        return;
-                    }
+      if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
+        const sectorStrings = [];
 
-                    if (includePositions) {
-                        // Option A: encode with positions
-                        sectorStrings.push(`${filename}.${positions.join(',')}`);
-                    } else {
-                        // Option B: just filenames (positions ignored)
-                        sectorStrings.push(filename);
-                    }
-                });
-
-                if (sectorStrings.length > 0) {
-                    catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
-                }
-            } else if (Array.isArray(layers)) {
-                // legacy flat array for other categories
-                if (layers.length > 0) {
-                  catStrings.push(`${abbr}:${layers.join(',')}`);
-                }
+        Object.entries(layers).forEach(([filename, positions]) => {
+          if (!positions || positions.length === 0) {
+            if (!includePositions) {
+              sectorStrings.push(filename);
             }
+            return;
+          }
+
+          if (includePositions) {
+            // Detect shared prefix (1 or 2 characters)
+            const prefix = positions[0].slice(0, 2);
+            const suffixes = positions.map(p => p.slice(prefix.length)).join(',');
+            sectorStrings.push(`${filename}.${prefix}:${suffixes}`);
+          } else {
+            sectorStrings.push(filename);
+          }
+        });
+
+        if (sectorStrings.length > 0) {
+          catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
         }
+      } else if (Array.isArray(layers)) {
+        if (layers.length > 0) {
+          catStrings.push(`${abbr}:${layers.join(',')}`);
+        }
+      }
+    }
 
-        if (catStrings.length === 0) return;
-        airportStrings.push(`${airport};${catStrings.join(';')}`);
-    });
+    if (catStrings.length === 0) return;
+    airportStrings.push(`${airport};${catStrings.join(';')}`);
+  });
 
-    const compactStr = airportStrings.join('|');
-    return encBase64(compactStr);
+  const compactStr = airportStrings.join('|');
+  return encBase64(compactStr);
 }
 
 /**
@@ -126,11 +125,15 @@ function decodeLayers(encoded) {
 
           sectorEntries.forEach(entry => {
             if (entry.includes('.')) {
-              const [filename, posStr] = entry.split('.');
-              const positions = posStr.split(',').filter(Boolean);
-              sectorObj[filename] = positions;
+              const [filename, rest] = entry.split('.');
+              if (rest.includes(':')) {
+                const [prefix, suffixStr] = rest.split(':');
+                const positions = suffixStr.split(',').map(suffix => prefix + suffix);
+                sectorObj[filename] = positions;
+              } else {
+                sectorObj[filename] = rest.split(',').filter(Boolean);
+              }
             } else {
-              // no positions given, just a filename
               sectorObj[entry] = [];
             }
           });

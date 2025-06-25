@@ -182,10 +182,10 @@ function loadGeoFiles(GEOFILES, map) {
                 pane: paneName,
                 style: {
                   color: color,
-                  weight: 2,
+                  weight: 3,
                   opacity: 1,
                   fillColor: color,
-                  fillOpacity: 0.6
+                  fillOpacity: 0.4
                 },
                 onEachFeature: (feature, layer) => {
                   if (typeof handleFeatureHover === "function") {

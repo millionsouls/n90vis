@@ -36,12 +36,7 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
       let names;
 
       // Detect if sectors are stored as nested object (new structure)
-      if (
-        categoryLabel === 'sectors' &&
-        namesOrObject &&
-        typeof namesOrObject === 'object' &&
-        !Array.isArray(namesOrObject)
-      ) {
+      if (categoryLabel === 'sectors' && namesOrObject && typeof namesOrObject === 'object' && !Array.isArray(namesOrObject)) {
         // Get file names (keys)
         names = Object.keys(namesOrObject);
       } else if (Array.isArray(namesOrObject)) {
@@ -73,44 +68,72 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
         if (categoryLabel === 'sectors') {
           const positionLayers = GEOLAYERS[airport]?.[categoryLabel]?.[name];
           if (typeof positionLayers === 'object') {
-            const rightbar = document.getElementById("rightbar");
-
-            // Create a container for this sector's positions
-            const containerId = `rightbar-${airport}-${categoryLabel}-${name}`;
-            const positionContainer = document.createElement("div");
-            positionContainer.id = containerId;
-            positionContainer.style.display = "none"; // Hidden by default
-            positionContainer.style.marginBottom = "10px";
-
-            const header = document.createElement("div");
-            header.className = "position-header";
-            header.innerText = `${airport} ${name}`;
-            positionContainer.appendChild(header);
-
-            Object.entries(positionLayers).forEach(([positionName, layer]) => {
-              const posId = `toggle-${airport}${categoryLabel}${name}${positionName}`;
-              const div = document.createElement("div");
-              div.innerHTML = `<input type="checkbox" id="${posId}" checked> <label for="${posId}">${positionName}</label>`;
-              positionContainer.appendChild(div);
-
-              div.querySelector("input").addEventListener("change", function () {
-                if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-                  if (!this.checked) {
-                    map.removeLayer(layer);
-                  } else {
-                    map.addLayer(layer);
-                  }
-                  updateURLFromMapState();
-                }
-              });
-            });
-
-            rightbar.appendChild(positionContainer);
-
-            // Modify the parent sector checkbox listener to toggle the container
             const sectorCheckbox = div.querySelector("input");
+
             sectorCheckbox.addEventListener("change", function () {
-              positionContainer.style.display = this.checked ? "block" : "none";
+              const rightbar = document.getElementById("rightbar");
+              const airportGroupId = `rightbar-airport-${airport}`;
+              const fileId = `rightbar-file-${airport}-${name}`;
+
+              // Remove if unchecked
+              if (!this.checked) {
+                const fileContainer = document.getElementById(fileId);
+                if (fileContainer) fileContainer.remove();
+
+                const airportContainer = document.getElementById(airportGroupId);
+                if (airportContainer && airportContainer.querySelectorAll('.rightbar-file').length === 0) {
+                  airportContainer.remove();
+                }
+
+                return;
+              }
+
+              // Create airport group if it doesn't exist
+              let airportContainer = document.getElementById(airportGroupId);
+              if (!airportContainer) {
+                airportContainer = document.createElement("div");
+                airportContainer.id = airportGroupId;
+                airportContainer.className = "rightbar-airport-group";
+                airportContainer.style.marginBottom = "16px";
+
+                const header = document.createElement("div");
+                header.className = "position-airport-header dropdown-toggle";
+                header.innerText = airport;
+                airportContainer.appendChild(header);
+
+                rightbar.appendChild(airportContainer);
+              }
+
+              // Create sector file container
+              const fileContainer = document.createElement("div");
+              fileContainer.className = "rightbar-file";
+              fileContainer.id = fileId;
+
+              const fileLabel = document.createElement("div");
+              fileLabel.innerText = name; // sector file name, e.g., east/west
+              fileLabel.style.fontWeight = "600";
+              fileContainer.appendChild(fileLabel);
+
+              Object.entries(positionLayers).forEach(([positionName, layer]) => {
+                const posId = `toggle-${airport}${categoryLabel}${name}${positionName}`;
+                const div = document.createElement("div");
+                div.className = `position-id-toggle`
+                div.innerHTML = `<input type="checkbox" id="${posId}" checked> <label for="${posId}">${positionName}</label>`;
+                fileContainer.appendChild(div);
+
+                div.querySelector("input").addEventListener("change", function () {
+                  if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
+                    if (!this.checked) {
+                      map.removeLayer(layer);
+                    } else {
+                      map.addLayer(layer);
+                    }
+                    updateURLFromMapState();
+                  }
+                });
+              });
+
+              airportContainer.appendChild(fileContainer);
             });
           }
         }

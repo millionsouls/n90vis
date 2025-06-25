@@ -56,14 +56,12 @@ function hexToRGBA(hex, alpha = 0.8) {
 function buildFeatureInfoHTML(features) {
   const grouped = {};
 
-  // Step 1: Group features by Position
   features.forEach(f => {
     const pos = f.properties.Position || '';
     if (!grouped[pos]) grouped[pos] = [];
     grouped[pos].push(f);
   });
 
-  // Step 2: Build data for each group
   const groupBlocks = Object.entries(grouped).map(([pos, feats]) => {
     const altSet = new Set();
     const altRows = [];
@@ -81,19 +79,16 @@ function buildFeatureInfoHTML(features) {
       }
     });
 
-    // Step 3: Sort altitudes within the group
     altRows.sort((a, b) => {
       const parse = v => v === 'SFC' ? 0 : parseInt(v, 10) || 0;
       return parse(a.low) - parse(b.low);
     });
 
-    // Step 4: Determine the group's sorting key (min altitude)
     const minLow = Math.min(...altRows.map(r => r.low === 'SFC' ? 0 : parseInt(r.low, 10) || 0));
     const color = feats[0].properties.Fill || "#222";
     const isBright = isColorTooBright(color);
     const textColor = isBright ? '#000' : '#fff';
 
-    // Step 5: Build final HTML string for the group
     const html = `
       <div class="feature-info-row" style="background:${color}; color:${textColor}; padding: 4px; border-radius: 4px;">
         <div class="feature-info-pos">${pos}</div>
@@ -111,10 +106,8 @@ function buildFeatureInfoHTML(features) {
     return { html, minLow };
   });
 
-  // Step 6: Sort all position groups by their minLow across the board
   groupBlocks.sort((a, b) => a.minLow - b.minLow);
 
-  // Step 7: Output joined HTML
   return groupBlocks.map(g => g.html).join('');
 }
 

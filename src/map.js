@@ -47,9 +47,32 @@ const map = L.map('map', {
   smoothSensitivity: 5,   // zoom speed. default is 1
 });
 
-L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
-L.control.zoom({ position: 'topright' }).addTo(map);
 L.control.scale({ position: 'bottomright' }).addTo(map);
+// Add the controls first
+const layerControl = L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
+const zoomControl = L.control.zoom({ position: 'topright' }).addTo(map);
+
+// Delay DOM restructuring to ensure controls exist
+setTimeout(() => {
+  const mapContainer = document.querySelector('.leaflet-top.leaflet-right');
+
+  if (mapContainer) {
+    // Create a wrapper div
+    const wrapper = document.createElement('div');
+    wrapper.className = 'leaflet-custom-topright';
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'row';
+    wrapper.style.gap = '6px'; // spacing between controls
+
+    // Move all children into wrapper
+    while (mapContainer.firstChild) {
+      wrapper.appendChild(mapContainer.firstChild);
+    }
+
+    mapContainer.appendChild(wrapper);
+  }
+}, 0);
+
 
 map.on('baselayerchange', function(e) {
   currentLayer = baseLayers[e.name];
@@ -68,24 +91,50 @@ document.getElementById('toggle-basemap').addEventListener('click', function () 
     });
   }
 });
+
 // Resets all toggled map layers/features to off
 document.getElementById('reset-layers').addEventListener('click', function () {
   Object.entries(GEOLAYERS).forEach(([airport, categoryObj]) => {
     Object.entries(categoryObj).forEach(([category, subCategoryObj]) => {
-      Object.entries(subCategoryObj).forEach(([name, layerGroup]) => {
-        const id = `toggle-${airport}${category}${name}`;
-        const originalCheckbox = document.getElementById(id);
+      Object.entries(subCategoryObj).forEach(([name, layerOrDict]) => {
+        const mainId = `toggle-${airport}${category}${name}`;
+        const mainCheckbox = document.getElementById(mainId);
 
-        if (map.hasLayer(layerGroup)) {
-          map.removeLayer(layerGroup);
+        // Remove the rightbar container for this file
+        const fileContainer = document.getElementById(`rightbar-file-${airport}-${name}`);
+        if (fileContainer) fileContainer.remove();
+
+        // Handle standard Layer or LayerGroup
+        if (layerOrDict instanceof L.Layer || layerOrDict instanceof L.LayerGroup) {
+          if (map.hasLayer(layerOrDict)) {
+            map.removeLayer(layerOrDict);
+          }
+        }
+        // Handle sector with positions
+        else if (typeof layerOrDict === 'object') {
+          Object.entries(layerOrDict).forEach(([positionName, layer]) => {
+            if (map.hasLayer(layer)) {
+              map.removeLayer(layer);
+            }
+
+            // Reset individual position checkbox
+            const posId = `toggle-${airport}${category}${name}${positionName}`;
+            const posCheckbox = document.getElementById(posId);
+            if (posCheckbox) posCheckbox.checked = false;
+          });
         }
 
-        if (originalCheckbox) {
-          originalCheckbox.checked = false;
+        // Reset main file checkbox
+        if (mainCheckbox) {
+          mainCheckbox.checked = false;
         }
       });
     });
   });
+
+  // Clean up empty airport containers in rightbar
+  const rightbar = document.getElementById("rightbar");
+  rightbar.querySelectorAll(".rightbar-airport-group").forEach(group => group.remove());
 
   updateURLFromMapState();
 });

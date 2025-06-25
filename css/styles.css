@@ -12,6 +12,19 @@
 .leaflet-interactive {
   cursor: crosshair !important;
 }
+.leaflet-custom-topright .leaflet-control {
+  margin: 5px !important;
+}
+.leaflet-control-zoom,
+.leaflet-control-layers {
+  float: none !important;
+}
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  padding: 3px;
+  font-size: 16px;
+  width: auto;
+}
 
 /* Footer */
 #page-footer {

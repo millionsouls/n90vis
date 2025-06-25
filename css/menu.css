@@ -58,19 +58,39 @@
 #rightbar {
   display: flex;
   flex-direction: column;
-  top: 25%;
+  top: 20%;
   right: var(--menuoffset-left);
-  height: 50%;
-  width: var(--menuwidth);
+  height: 70%;
+  width: 140px;
   position: fixed;
   z-index: 1000;
   background: var(--div-back-white);
   border-radius: 10px;
   box-shadow: var(--boxshadow-center);
   transition: 0.3s ease;
-
-  padding: 10px;
+  padding: 5px;
 }
+.rightbar-file {
+  margin: 4px 0px 0px 5px;
+  font-size: 13px;
+}
+.position-id-toggle {
+  margin-left: 5px;
+  font-size: 12px;
+  border: 0px;
+  border-radius: 6px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+.position-id-toggle input[type=checkbox] {
+  transform: scale(0.8);
+  margin: 0px;
+  padding: 0px;
+}
+
+
+/* Misc */
 #information {
   padding: 10px;
   margin-bottom: 0px;
@@ -124,7 +144,6 @@
   accent-color: #3388ff;
   cursor: pointer;
 }
-
 
 /* Dropdown menu */
 .dropdown {

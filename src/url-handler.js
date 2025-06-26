@@ -15,7 +15,7 @@ const categoryAbbrReverse = {
     3: 'sids',
     4: 'videomap'
 };
-const includePositions = true;
+const includePositions = false;
 
 function encBase64(str) {
     return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -34,7 +34,7 @@ function decompress(str) {
 
 /**
  * Transforms dictionary into custom encoded string
- * ex: jfk;1:4l-4r;2:parch3;4:combined|ewr;1:southwest;2:fqm3,phlbo4
+ * ex: 
  * 
  * @param {*} layersNested 
  * @returns 
@@ -114,27 +114,33 @@ function decodeLayers(encoded) {
       result[airport] = {};
 
       parts.slice(1).forEach(catPart => {
-        const [catAbbr, layerStr] = catPart.split(':');
+        const [catAbbr, ...layerParts] = catPart.split(':');
+        const layerStr = layerParts.join(':'); // In case there are extra colons
         if (!catAbbr || !layerStr) return;
+
         const cat = categoryAbbrReverse[catAbbr];
         if (!cat) return;
 
         if (cat === 'sectors') {
-          const sectorEntries = layerStr.split('|').filter(Boolean);
           const sectorObj = {};
+          const entries = layerStr.split('|'); // e.g., JFK_4s.N2:M,E,K
 
-          sectorEntries.forEach(entry => {
-            if (entry.includes('.')) {
-              const [filename, rest] = entry.split('.');
-              if (rest.includes(':')) {
-                const [prefix, suffixStr] = rest.split(':');
-                const positions = suffixStr.split(',').map(suffix => prefix + suffix);
-                sectorObj[filename] = positions;
-              } else {
-                sectorObj[filename] = rest.split(',').filter(Boolean);
-              }
+          entries.forEach(entry => {
+            const [filename, rest] = entry.split('.');
+            if (!rest) {
+              sectorObj[filename] = [];
+              return;
+            }
+
+            const colonIndex = rest.indexOf(':');
+            if (colonIndex !== -1) {
+              const prefix = rest.slice(0, colonIndex);
+              const suffixes = rest.slice(colonIndex + 1).split(',').filter(Boolean);
+              const positions = suffixes.map(suffix => prefix + suffix);
+              sectorObj[filename] = positions;
             } else {
-              sectorObj[entry] = [];
+              // No compression used
+              sectorObj[filename] = rest.split(',').filter(Boolean);
             }
           });
 
@@ -149,7 +155,6 @@ function decodeLayers(encoded) {
         }
       });
     });
-
     return result;
   } catch (err) {
     console.error('URL Decode error:', err);
@@ -167,6 +172,7 @@ function getEnabledLayersFromURL() {
     const layerParam = params.get("l");
 
     if (!layerParam) return {};
+
     return decodeLayers(layerParam);
 }
 

@@ -48,9 +48,8 @@ const map = L.map('map', {
 });
 
 L.control.scale({ position: 'bottomright' }).addTo(map);
-// Add the controls first
-const layerControl = L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
-const zoomControl = L.control.zoom({ position: 'topright' }).addTo(map);
+L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
+L.control.zoom({ position: 'topright' }).addTo(map);
 
 // Delay DOM restructuring to ensure controls exist
 setTimeout(() => {
@@ -72,12 +71,6 @@ setTimeout(() => {
     mapContainer.appendChild(wrapper);
   }
 }, 0);
-
-
-map.on('baselayerchange', function(e) {
-  currentLayer = baseLayers[e.name];
-  basemapVisible = true;
-});
 
 // Toggles visibility of OSM map
 document.getElementById('toggle-basemap').addEventListener('click', function () {

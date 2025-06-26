@@ -22,7 +22,6 @@
 #menu.collapsed {
   transform: translateX(-100%);
 }
-
 #sidebar-toggle {
   position: fixed;
   top: 10px;
@@ -58,17 +57,35 @@
 #rightbar {
   display: flex;
   flex-direction: column;
-  top: 20%;
-  right: var(--menuoffset-left);
-  height: 70%;
+  top: 10%;
+  right: 5px;
+  height: 80%;
   width: 140px;
   position: fixed;
   z-index: 1000;
   background: var(--div-back-white);
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: var(--boxshadow-center);
   transition: 0.3s ease;
   padding: 5px;
+}
+#rightbar-toggle {
+  position: fixed;
+  top: 11%;
+  right: 165px;
+  z-index: 1000;
+  margin: 0px;
+  background: var(--div-back-white);
+  border: none;
+  padding: 5px;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: var(--boxshadow-center);
+  transition: right 0.3s ease;
+}
+#rightbar.collapsed {
+  transform: translateX(100%);
 }
 .rightbar-file {
   margin: 4px 0px 0px 5px;

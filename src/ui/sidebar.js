@@ -128,6 +128,7 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
                     } else {
                       map.addLayer(layer);
                     }
+
                     updateURLFromMapState();
                   }
                 });

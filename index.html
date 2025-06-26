@@ -25,6 +25,7 @@
   
   <!-- Sidebar -->
   <button id="sidebar-toggle">&#9776;</button> 
+  <button id="rightbar-toggle">&#9776;</button> 
   <div id="menu">
     <div id="information" class="flex-center">
       <h4>ZNY TRACON Visualizer</h4>
@@ -38,9 +39,11 @@
       <input type="text" id="search-input" placeholder="Search">
       <div id="search-results"></div>
     </div>
+
     <div id="sidebar"></div>
-    <div id="rightbar"></div>
   </div>
+
+  <div id="rightbar"></div>
 
   <!-- Map container -->
   <div id="map"></div>
@@ -70,12 +73,18 @@
 </body>
 
 <script>
-    const toggleButton = document.getElementById('sidebar-toggle');
-    const sidebar = document.getElementById('menu');
+    const sidebarToggle = document.getElementById('sidebar-toggle')
+    const rightbarToggle = document.getElementById('rightbar-toggle')
+    const sidebar = document.getElementById('menu')
+    const rightbar = document.getElementById('rightbar')
 
-    toggleButton.addEventListener('click', () => {
+    sidebarToggle.addEventListener('click', () => {
       sidebar.classList.toggle('collapsed');
-      toggleButton.style.left = sidebar.classList.contains('collapsed') ? 'calc(var(--menuoffset-left) + 10px)' : 'calc(var(--menuwidth) + var(--menuoffset-left) + 10px)';
+      sidebarToggle.style.left = sidebar.classList.contains('collapsed') ? 'calc(var(--menuoffset-left) + 10px)' : 'calc(var(--menuwidth) + var(--menuoffset-left) + 10px)';
+    });
+    rightbarToggle.addEventListener('click', () => {
+      rightbar.classList.toggle('collapsed');
+      rightbarToggle.style.right = rightbar.classList.contains('collapsed') ? '10px' : '165px';
     });
 
     document.addEventListener("click", function (e) {

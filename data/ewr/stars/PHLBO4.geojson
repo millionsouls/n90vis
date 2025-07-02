@@ -20,7 +20,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "icon": "107_Navaid_VORTAC.svg"
             },
             "geometry": {
                 "type": "Point",
@@ -160,7 +161,8 @@
                 ],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "icon": "107_Navaid_VORTAC.svg"
             },
             "geometry": {
                 "type": "Point",
@@ -214,7 +216,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "icon": "103_Navaid_VOR_DME.svg"
             },
             "geometry": {
                 "type": "Point",

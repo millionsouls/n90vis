@@ -22,16 +22,16 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
   // Hide results on outside click
   document.body.addEventListener("click", (e) => {
     if (!e.target.closest("#search-results") && e.target !== searchInput) {
-      resultsContainer.style.display = "none";
+      resultsContainer.style.display = "none"
     }
   });
 
   searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
-    resultsContainer.innerHTML = "";
+    const query = searchInput.value.trim().toLowerCase()
+    resultsContainer.innerHTML = ""
 
     if (!query) {
-      resultsContainer.style.display = "none";
+      resultsContainer.style.display = "none"
       return;
     }
 
@@ -71,18 +71,19 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
       const id = `toggle-${airport}${category}${name}`;
       const originalCheckbox = document.getElementById(id);
       const layer = GEOLAYERS[airport]?.[category]?.[name];
+      const checkbox = document.getElementById(id);
 
       const wrapper = document.createElement("div");
       wrapper.className = "search-result";
 
       const cb = document.createElement("input");
       cb.type = "checkbox";
-      cb.checked = originalCheckbox?.checked || false;
+      cb.checked = checkbox?.checked || false;
       cb.id = `search-${id}`;
 
       cb.addEventListener("change", () => {
-        if (!originalCheckbox || !layer) return;
-        originalCheckbox.checked = cb.checked;
+        if (!layer || !checkbox) return;
+        checkbox.checked = cb.checked;
 
         // Add or remove layers
         if (cb.checked) {

@@ -4,13 +4,15 @@
  * Creates markers and labels on STAR/SID with corresponding constraints if any
  */
 
+const iconPath = "../assets/icons/";
+
 /**
  * Transform altitude/speed constraints into structured data
  * 
  * @param {Array<string>} constraints - Array of constraint strings
  * @returns {Array<[string, string]>} - Array of [prefix, value] pairs
  */
-function buildConstraints(constraints) {
+function fmtConstraint(constraints) {
   if (!Array.isArray(constraints)) return [];
 
   const parsed = constraints.map(raw => {
@@ -49,70 +51,116 @@ function buildConstraints(constraints) {
   return parsed;
 }
 
-function isColorTooBright(hexColor) {
-  const hex = hexColor.replace('#', '');
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  
-  // Relative luminance formula
-  const brightness = (0.299 * r + 0.587 * g + 0.114 * b);
-  return brightness > 210;
+/**
+ * Help function to construct crossing restruction html
+ * 
+ * @param {*} item 
+ * @returns 
+ */
+function buildTextHTML(item) {
+  if (item.length === 2) {
+    return `
+    <div class="flex-center">
+      <span class="res-label ${item[0][0]}">${item[0][1]}</span>
+      <span class="res-label ${item[1][0]}">${item[1][1]}</span>
+    </div>
+    `;
+  } else if (item.length === 1) {
+    return `
+      <div class="flex-center">
+        <span class="res-label ${item[0][0]}">${item[0][1]}</span>
+      </div>
+    `;
+  } else {
+    return ``;
+  }
+}
+
+/**
+ * SVG image editing
+ * 
+ * @param {*} svg 
+ * @param {*} color 
+ * @returns 
+ */
+async function parseSVG(props, type, svg) {
+  if (!svg) {
+    svg = ICONS[type.toLowerCase()];
+    if (!svg) return null;
+  }
+  const fullPath = `${iconPath}${svg}`;
+
+  try {
+    const response = await fetch(fullPath);
+    if (!response.ok) throw new Error("SVG not found");
+
+    const svgText = await response.text()
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+    const svgElem = svgDoc.querySelector("svg");
+
+    svgElem.removeAttribute("width");
+    svgElem.removeAttribute("height");
+    svgElem.setAttribute("width", "40");
+    svgElem.setAttribute("height", "40");
+
+    svgElem.querySelectorAll("[style]").forEach(el => {
+      let style = el.getAttribute("style");
+
+      if (style.includes("stroke-width")) {
+        style = style.replace(/stroke-width:[^;]+;/, `stroke-width:1.5;`);
+      }
+      if (style.includes("fill-opacity")) {
+        style = style.replace(/fill-opacity:[^;]+;/, `fill-opacity:0.8;`);
+      }
+      if (props.notes != null) {
+        style = style.replace(/stroke:[^;]+;/, `stroke:${props.color};`);
+      }
+
+      el.setAttribute("style", style);
+    });
+
+    return `<div style="width:14px; height:14px; display: flex; align-items: center; justify-content: center; padding-bottom: 5px;">${svgElem.outerHTML}</div>`;
+  } catch (err) {
+    console.warn(`SVG load failed: ${fullPath}`, err);
+    return null;
+  }
 }
 
 /**
  * Construct HTML for a marker
  * 
- * @param {string} id 
- * @param {Array<[string, string]>} altitudes 
- * @param {Array<[string, string]>} speeds 
- * @param {string} color 
- * @returns {string}
  */
-function buildMarker(id, altitudes, speeds, color) {
-  // Altitude HTML
-  const isBright = isColorTooBright(color);
-  const adjColor = isBright ? '#000' : '#fff';
+async function buildMarker(props, type="req_int") {
+  const altitude = fmtConstraint(props.altitudes)
+  const speed = fmtConstraint(props.speeds)
 
+  let altHtml = buildTextHTML(altitude)
+  let speedHtml = buildTextHTML(speed)
+  let shapeHtml = ''
 
-  let altHtml = "";
-  if (altitudes.length === 2) {
-    altHtml = `
-      <div class="flex-center">
-        <span class="res-label ${altitudes[0][0]}">${altitudes[0][1]}</span>
-        <span class="res-label ${altitudes[1][0]}">${altitudes[1][1]}</span>
+  if (type == "dot" && !props.icon) {
+    shapeHtml = `
+      <div style="
+        width:14px; 
+        height:14px; 
+        border-radius:50%; 
+        background:${color}; 
+        border:0px solid #000;
+        margin-bottom: 2px;">
       </div>
     `;
-  } else if (altitudes.length === 1) {
-    altHtml = `
-      <div class="flex-center">
-        <span class="res-label ${altitudes[0][0]}">${altitudes[0][1]}</span>
-      </div>
-    `;
-  }
-
-  // Speed HTML
-  let speedHtml = "";
-  if (speeds.length === 2) {
-    speedHtml = `
-      <div class="flex-center">
-        <span class="res-label ${speeds[0][0]}">${speeds[0][1]}</span>
-        <span class="res-label ${speeds[1][0]}">${speeds[1][1]}</span>
-      </div>
-    `;
-  } else if (speeds.length === 1) {
-    speedHtml = `
-      <div class="flex-center">
-        <span class="res-label ${speeds[0][0]}">${speeds[0][1]}</span>
-      </div>
-    `;
+  } else if (props.icon || type) {
+    shapeHtml = await parseSVG(props, type, props.icon, props.color);
   }
 
   return `
     <div style="display: flex; flex-direction: column; align-items: center;">
-      <div style="width:12px; height:12px; border-radius:50%; background:${color}; border:2px solid #000;"></div>
-      <div class="procedure-label" style="border-color:${color}; ">
-        <div style="font-size:12px; text-align:center;">${id || ""}</div>
+      ${shapeHtml}
+      <div class="procedure-label" style="border-color:${props.color}; ">
+        <div style="font-size:12px; text-align:center; white-space: nowrap;">
+          ${props.id}
+        </div>
         <div class="procedure-text" style="">
           ${altHtml}
           ${speedHtml}
@@ -122,4 +170,4 @@ function buildMarker(id, altitudes, speeds, color) {
   `;
 }
 
-export { buildConstraints, buildMarker };
+export { buildMarker };

@@ -8,10 +8,10 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <link rel="stylesheet" href="css/common.css" />
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/menu.css" />
-  <link rel="stylesheet" href="css/layerinfo.css" />
+  <link rel="stylesheet" href="assets/css/common.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/menu.css" />
+  <link rel="stylesheet" href="assets/css/layerinfo.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,8 @@
 <body>
   <!-- Info box under cursor-->
   <div id="feature-info-box"></div>
+  <div id="notes-hover-box" style="display: none; position: fixed; z-index: 2000;"></div>
+
   
   <!-- Sidebar -->
   <button id="sidebar-toggle">&#9776;</button> 
@@ -49,7 +51,8 @@
   <div id="map"></div>
 
   <!-- LOAD ORDER -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet"></script>
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <script src="src/ui/smoothscroll.js"></script>
   <script src="src/config.js"></script>
@@ -66,7 +69,7 @@
     </a>
 
     <a href="https://nyartcc.org/" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
-      <img src="css/ZNY-transparent.png" class="footer-logo"></img>
+      <img src="assets/ZNY-transparent.png" class="footer-logo"></img>
       vZNY
     </a>
   </footer>

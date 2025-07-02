@@ -1,53 +1,17 @@
 /*
 Loading geojson files
 */
-
-const GEOFILES = {
-  jfk: [
-    "sectors/JFK_4s.json",
-
-    "stars/PARCH3.geojson",
-    
-    "videomap/JFK.geojson"
-  ],
-  lga: [
-    "sectors/LGA_D4L4RX31.json",
-  ],
-  ewr: [
-    "sectors/EWR_SW.json",
-
-    "stars/FQM3.geojson",
-    "stars/PHLBO4.geojson",
-  ],
-  isp: [
-    "sectors/ISP.geojson"
-
-  ],
-  lib: [
-    "sectors/LIB.geojson"
-
-  ],
-  hpn: [
-    "sectors/HPN_16.json",
-    "sectors/HPN_34.json",
-  ],
-  mdt: [
-    "sectors/MDT_E.json",
-    "sectors/MDT_W.json",
-  ],
-  bgm: [
-    "sectors/BGM.geojson",
-  ],
-  avp: [
-    "sectors/AVP.geojson",
-  ],
-  abe: [
-    "sectors/ABE.geojson",
-  ],
-  elm: [
-    "sectors/ELM.geojson",
-  ],
-  wri: [
-    "sectors/WRI.geojson"
-  ],
-};
+const ICONS = {
+  "nbd": "100_Navaid_NBD.svg",
+  "vor": "101_Navaid_VOR.svg",
+  "dme": "102_Navaid_DME.svg",
+  "vordme": "103_Navaid_VOR_DME.svg",
+  "tacan": "106_Navaid_TACAN.svg",
+  "vortac": "107_Navaid_VORTAC.svg",
+  "elliptical": "109_Navaid_Elliptical.svg",
+  "compul_int": "121_Compulsory_Fly_By_INT.svg",
+  "compul_way": "121_Compulsory_Fly_By_Waypoint.svg",
+  "req_int": "121_On_Request_Fly_By_INT.svg",
+  "req_way": "121_On_Request_Fly_By_Waypoint.svg",
+  "req_over_way": "121_On_Request_Fly_Over_Waypoint.svg",
+}

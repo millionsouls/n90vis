@@ -19,16 +19,13 @@ const CONFIG = {
 }
 const baseLayers = {
   "Standard": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
     attribution: '© OpenStreetMap contributors'
   }),
-  "Topo": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    maxZoom: 17,
-    attribution: '© OpenTopoMap contributors'
-  }),
   "Hot": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    maxZoom: 19,
     attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
+  }),
+  "Dark": L.esri.tiledMapLayer({
+    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
   })
 };
 let currentLayer = baseLayers["Standard"]

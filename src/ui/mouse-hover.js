@@ -4,7 +4,8 @@
  * only the devil knows what's going on here
  */
 
-let featureInfoBox = document.getElementById('feature-info-box');
+const featureInfoBox = document.getElementById('feature-info-box');
+const notesHoverBox = document.getElementById("notes-hover-box");
 
 import { map } from '../map.js';
 
@@ -28,7 +29,7 @@ function formatAlt(val) {
   return val; // If not a number, return as is
 }
 
-function isColorTooBright(hexColor) {
+function isColorBright(hexColor) {
   const hex = hexColor.replace('#', '');
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
@@ -86,7 +87,7 @@ function buildFeatureInfoHTML(features) {
 
     const minLow = Math.min(...altRows.map(r => r.low === 'SFC' ? 0 : parseInt(r.low, 10) || 0));
     const color = feats[0].properties.Fill || "#222";
-    const isBright = isColorTooBright(color);
+    const isBright = isColorBright(color);
     const textColor = isBright ? '#000' : '#fff';
 
     const html = `
@@ -110,8 +111,6 @@ function buildFeatureInfoHTML(features) {
 
   return groupBlocks.map(g => g.html).join('');
 }
-
-
 
 /**
  * Show the info box when over a layer
@@ -181,25 +180,68 @@ function handleFeatureHover(feature, layer) {
   const mapContainer = map.getContainer();
   if (!mapContainer) return;
 
-  layer.on('mouseover', function () {
+  const isMarker = layer instanceof L.Marker
+  const isPolygon = layer instanceof L.Polygon
+
+  layer.on('mouseover', function (e) {
     mapContainer.classList.add('hovering-feature');
+
+    if (isMarker && feature?.properties?.notes) {
+      notesHoverBox.innerHTML = feature.properties.notes;
+      notesHoverBox.style.display = 'block';
+    }
   });
 
   layer.on('mouseout', function () {
     mapContainer.classList.remove('hovering-feature');
     hidefeatureInfoBox();
+    notesHoverBox.style.display = 'none';
   });
 
   layer.on('mousemove', function (e) {
     let featuresAtPoint = [];
-    map.eachLayer(l => {
-      if (l.feature && l.getBounds && l.getBounds().contains(e.latlng)) {
-        if (l instanceof L.Polygon && !isLatLngInPolygon(e.latlng, l)) return;
-        featuresAtPoint.push(l.feature);
+
+    if (isMarker) {
+      featuresAtPoint.push(feature);
+
+      if (feature?.properties?.notes) {
+        // Position notes box top-left of cursor
+        let x = e.originalEvent.clientX + 5;
+        let y = e.originalEvent.clientY - notesHoverBox.offsetHeight - 5;
+
+        // Clamp so it doesn't go off screen
+        if (x < 0) x = 5;
+        if (y < 0) y = 5;
+
+        notesHoverBox.style.left = x + 'px';
+        notesHoverBox.style.top = y + 'px';
+      } else {
+        notesHoverBox.style.display = 'none';
       }
-    });
-    showfeatureInfoBox(featuresAtPoint, e);
+      // Don't show feature info box for markers
+      hidefeatureInfoBox();
+      return;
+    }
+
+    if (isPolygon) {
+      // Only collect polygon features to show in the feature info box
+      let featuresAtPoint = [];
+      map.eachLayer(l => {
+        if (l.feature && l.getBounds && l.getBounds().contains(e.latlng)) {
+          if (l instanceof L.Polygon || l instanceof L.MultiPolygon) {
+            if (!isLatLngInPolygon(e.latlng, l)) return;
+            featuresAtPoint.push(l.feature);
+          }
+        }
+      });
+      showfeatureInfoBox(featuresAtPoint, e);
+    } else {
+      // For non-polygon, hide feature info box
+      hidefeatureInfoBox();
+    }
   });
 }
+
+
 
 export { handleFeatureHover }

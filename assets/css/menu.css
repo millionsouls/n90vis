@@ -68,6 +68,10 @@
   box-shadow: var(--boxshadow-center);
   transition: 0.3s ease;
   padding: 5px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 #rightbar-toggle {
   position: fixed;

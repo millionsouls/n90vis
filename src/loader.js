@@ -4,7 +4,7 @@
  * Loads geojson files
  */
 
-import { buildConstraints, buildMarker } from './constraints.js';
+import { buildMarker } from './constraints.js';
 import { handleFeatureHover } from './ui/mouse-hover.js';
 
 const categoryMap = {
@@ -18,31 +18,75 @@ const GEODATA = {};
 const GEOLAYERS = {};
 const fetchPromises = [];
 
-/**
-   GEODATA = {
-    JFK: {
-      sectors: [...],
-      sids: [...],
-      stars: [...],
-      videomap: [...]
-    },
-    LGA: {
-      ...
-     }
-   }
-   
-   GEOLAYERS = {
-    JFK: {
-      sectors: {
-        4s: L.LayerGroup(...),
-      },
-      stars: {
-        lendy6: L.LayerGroup(...)
-      },
-    },
-   }
- */
+function loadPD(map, data, fmtName) {
+  const linePane = `pane-lines-${fmtName}`;
+  const markerPane = `pane-markers-${fmtName}`;
+  if (!map.getPane(linePane)) {
+    map.createPane(linePane);
+    map.getPane(linePane).style.zIndex = 800;
+  }
+  if (!map.getPane(markerPane)) {
+    map.createPane(markerPane);
+    map.getPane(markerPane).style.zIndex = 900;
+  }
 
+  const markers = [];
+  const lines = [];
+
+  data.features.forEach(f => {
+    const props = f.properties || {};
+    const color = props.color || "#0000ff";
+
+    if (f.geometry.type === "Point") {
+      const coords = f.geometry.coordinates;
+      const markerDiv = document.createElement("div");
+      markerDiv.innerHTML = "Loading";
+
+      const marker = L.marker([coords[1], coords[0]], {
+        pane: markerPane,
+        icon: L.divIcon({
+          className: 'procedure-icon',
+          html: markerDiv,
+          iconAnchor: [6, 6]
+        })
+      });
+      const feature = { properties: props };
+      handleFeatureHover(feature, marker);
+      buildMarker(props, props.type).then(html => {markerDiv.innerHTML = html})
+
+      markers.push(marker);
+    } else if (f.geometry.type === "LineString") {
+      const line = L.polyline(f.geometry.coordinates.map(([lng, lat]) => [lat, lng]), {
+        color: color,
+        weight: 3,
+        opacity: 1,
+        pane: linePane
+      });
+      lines.push(line);
+    }
+  });
+
+  const linesGroup = L.layerGroup(lines);
+  const markersGroup = L.layerGroup(markers);
+  return L.layerGroup([linesGroup, markersGroup]);
+}
+
+function loadVM(map, data, fmtName) {
+  const videoStyle = feature => {
+    if (feature.geometry.type === "LineString") {
+      return { color: "#000000", weight: 1 };
+    }
+    return {};
+  };
+
+  const videoPointToLayer = () => null;
+  const geoJsonLayer = L.geoJSON(data, {
+    style: videoStyle,
+    pointToLayer: videoPointToLayer
+  });
+
+  return L.layerGroup([geoJsonLayer]);
+}
 
 /**
  * Loads GEOJSON files, creates Leaflet layers and populates GEODATA, GEOLAYERS
@@ -71,90 +115,25 @@ function loadGeoFiles(GEOFILES, map) {
           if (!data.features) throw new Error('Invalid GeoJSON: missing features');
 
           const name = data.name || fileName.pop().split('.')[0];
+          const fmtName = `${upperKey}_${category}_${name}`.replace(/[^\w]/g, '')
           //const name = name.toLowerCase().replace(/[^\w\-]/g, '');
 
           let group;
           if (category === "stars" || category === "sids") {
-            /**
-             * Procedures
-             */
-            const fileSafe = `${upperKey}_${category}_${name}`.replace(/[^\w]/g, '');
-            const linePane = `pane-${category}-lines-${fileSafe}`;
-            const markerPane = `pane-${category}-markers-${fileSafe}`;
-            if (!map.getPane(linePane)) {
-              map.createPane(linePane);
-              map.getPane(linePane).style.zIndex = 800;
-            }
-            if (!map.getPane(markerPane)) {
-              map.createPane(markerPane);
-              map.getPane(markerPane).style.zIndex = 900;
-            }
+            group = loadPD(map, data, fmtName)
 
-            const markers = [];
-            const lines = [];
-
-            data.features.forEach(f => {
-              const props = f.properties || {};
-              const color = props.color || "#0000ff";
-
-              if (f.geometry.type === "Point") {
-                const coords = f.geometry.coordinates;
-                const altitudes = buildConstraints(props.altitudes);
-                const speeds = buildConstraints(props.speed);
-
-                const marker = L.marker([coords[1], coords[0]], {
-                  pane: markerPane,
-                  icon: L.divIcon({
-                    className: 'procedure-icon',
-                    html: buildMarker(props.id, altitudes, speeds, color),
-                    iconAnchor: [6, 6]
-                  })
-                });
-                markers.push(marker);
-
-              } else if (f.geometry.type === "LineString") {
-                const line = L.polyline(f.geometry.coordinates.map(([lng, lat]) => [lat, lng]), {
-                  color: color,
-                  weight: 3,
-                  opacity: 1,
-                  pane: linePane
-                });
-                lines.push(line);
-              }
-            });
-
-            const linesGroup = L.layerGroup(lines);
-            const markersGroup = L.layerGroup(markers);
-            group = L.layerGroup([linesGroup, markersGroup]);
             if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
             if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
             GEOLAYERS[upperKey][category][name] = group;
-
             if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
             if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
             GEODATA[upperKey][category].push(name);
           } else if (category === "videomap") {
-            /**
-             * Videomaps
-             */
-            const videoStyle = feature => {
-              if (feature.geometry.type === "LineString") {
-                return { color: "#000000", weight: 1 };
-              }
-              return {};
-            };
+            group = loadVM(map, data, fmtName)
 
-            const videoPointToLayer = () => null;
-            const geoJsonLayer = L.geoJSON(data, {
-              style: videoStyle,
-              pointToLayer: videoPointToLayer
-            });
-
-            group = L.layerGroup([geoJsonLayer]);
             if (!GEOLAYERS[upperKey]) GEOLAYERS[upperKey] = {};
             if (!GEOLAYERS[upperKey][category]) GEOLAYERS[upperKey][category] = {};
             GEOLAYERS[upperKey][category][name] = group;
-
             if (!GEODATA[upperKey]) GEODATA[upperKey] = {};
             if (!GEODATA[upperKey][category]) GEODATA[upperKey][category] = [];
             GEODATA[upperKey][category].push(name);
@@ -164,7 +143,6 @@ function loadGeoFiles(GEOFILES, map) {
               * Group each feature by its `Position` and create a LayerGroup per Position.
               */
             const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
-
             const featureGroupsByPosition = {};
 
             data.features.forEach(feature => {
@@ -200,7 +178,6 @@ function loadGeoFiles(GEOFILES, map) {
               featureGroupsByPosition[position].push(geoJsonLayer);
             });
 
-            // Create LayerGroups per position
             const positionGroups = {};
             Object.entries(featureGroupsByPosition).forEach(([position, layers]) => {
               positionGroups[position] = L.layerGroup(layers);

@@ -107,15 +107,24 @@ window.LayerControl = {
   }
 };
 
-loadGeoFiles(GEOFILES, map).then(({ GEODATA, GEOLAYERS }) => {
-  buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState)
-  attachSidebarListeners(document.getElementById("sidebar"))
-  setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState)
+fetch('data/file-index.json')
+  .then(response => {
+    if (!response.ok) throw new Error(`Failed to load file-index.json`);
+    return response.json();
+  })
+  .then(GEOFILES => {
+    return loadGeoFiles(GEOFILES, map);
+  })
+  .then(({ GEODATA, GEOLAYERS }) => {
+    buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState);
+    attachSidebarListeners(document.getElementById("sidebar"));
+    setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState);
 
-  console.log("Delayed execution after 2 seconds");
-  const enabledLayers = getEnabledLayersFromURL();
-  if (enabledLayers && window.LayerControl) {
-    window.LayerControl.setActiveLayers(enabledLayers);
-  }
-  // Load layers from url if and
-});
+    const enabledLayers = getEnabledLayersFromURL();
+    if (enabledLayers && window.LayerControl) {
+      window.LayerControl.setActiveLayers(enabledLayers);
+    }
+  })
+  .catch(err => {
+    console.error("Failed to load map layers:", err);
+  });

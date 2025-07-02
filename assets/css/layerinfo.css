@@ -44,6 +44,18 @@
   font-weight: 500;
 }
 
+/* Notes hover box */
+#notes-hover-box {
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: pre-wrap;
+  max-width: 200px;
+}
+
 /* Style for the procedure labels */
 .procedure-icon { /* Default leaftlet marker, we do not want this */
   background: none;
@@ -51,7 +63,7 @@
   box-shadow: none !important;
 }
 .procedure-label{
-  top: 3px;
+  top: 5px;
   border-radius: 6px;
   padding: 4px;
   border: 2px solid;

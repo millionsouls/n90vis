@@ -20,7 +20,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#ff0000"
+                "color": "#ff0000",
+                "type": "vortac"
             },
             "geometry": {
                 "type": "Point",
@@ -37,7 +38,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#ff0000"
+                "color": "#ff0000",
+                "type": "vordme"
             },
             "geometry": {
                 "type": "Point",
@@ -145,7 +147,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#ff0000"
+                "color": "#ff0000",
+                "type": "vordme"
             },
             "geometry": {
                 "type": "Point",

@@ -9,8 +9,8 @@ const iconPath = "../assets/icons/";
 /**
  * Transform altitude/speed constraints into structured data
  * 
- * @param {Array<string>} constraints - Array of constraint strings
- * @returns {Array<[string, string]>} - Array of [prefix, value] pairs
+ * @param {Array<string>} constraints
+ * @returns {Array<[string, string]>}
  */
 function fmtConstraint(constraints) {
   if (!Array.isArray(constraints)) return [];

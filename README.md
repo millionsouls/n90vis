@@ -1,51 +1,35 @@
 # ZNY TRACON Airspace Visualization
-Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additional options for displaying SIDs, STARs, and video maps.
-
+Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additional options for displaying SIDs, STARs, and video maps.\
 <b>FOR FLIGHT SIMULATION PURPOSES ONLY</b>
 
 
 (I'm really bad at writing documentation)
+
+## Features
+### Searching
+Search will find string matches for either file names, or airports/specific positions. IE: Typing `JFK` will pull up all Kennedy files, and `FQM3` will only show the FQM3 arrival.
+### URL Linking
+Selected `sectors`, `procedures`, and `videomaps` will generate a unique URL that can be shared and loaded to the specific configuration. Please not toggling individual positions for a `sector` will not reflect changes in the URL. <b>However, this feature is builtin to the code and can be enable if the developer desires.</b>
+### Feature Info
+Additional information pertaining to a sector's airspace or notes on a procedure will appear when hovered over. Airspace limits for `sectors` are also displayed.
+
 ## Installation
 ```
-Copy and run
+Copy/Fork/Download and run
 ```
 
 ## Structure
-```
-n90vis/
-├── css/
-│   ├── layerinfo.css       # Styles for boxes and UI for map layers/features
-│   ├── sidebar.css         # Styles for the menu/sidebar
-│   └── styles.css          # General body/text styling
-├── data/                   # Where geojson files should go
-│   ├── jfk/                # Airport or area, this creates an 'option' in the menu
-│   │   │                     You do not need to have all folders below, one or more works
-│   │   ├── sectors         # Layer polygons, the airspace
-│   │   ├── sids
-│   │   ├── stars
-│   │   └── videomaps
-│   └── elm/
-│       └── sectors
-├── src/
-│   ├── ui/
-│   │   ├── mouse-hover.js  # Info that appears when a mouse goes over an airspace sector
-│   │   ├── search.js       # Searching items
-│   │   ├── sidebar.js      # Magic for the menu dropdowns
-│   │   └── smoothscroll.js # Makes zooming on trackpads better
-│   ├── config.js           # Link all data files here
-│   ├── constraints.js      # Handles and creates SID/STAR constraints
-│   ├── loader.js           # Creates and connects the airspace layers
-│   ├── main.js             # Main point
-│   ├── map.js              # Creates and handles Leaflet maps
-│   └── url-handler.js      # Does URL linkage magic
-└── README.md  
-```
+`Procedures` refers to SID/STARs\
+`Sectors` refer to airspace owned by a position(s)
 
-### Data Files and Structure
-Takes the <a href="https://geojson.org/">GEOJSON</a> <b>FeatureCollection</b> format, however the extension does not matter. A JSON or TXT file with the same format will work.
+All files must be in the `GEOJSON` format and contain a `FeatureCollection`. Below are two examples of [FQM3 STAR](data/ewr/stars/FQM3.geojson) and [EWR SW](data/ewr/sectors/EWR_SW.json) files, addition language is provided below. Videomaps follow the same format but do not need extra `properties` as their geometry is only rendered.
+
+The general file structure is as follows: [`data/`](data) is the parent file where everything should be stored. Each folder under `data/` represents a unique <i>option or group</i> such as [`JFK`](data/jfk/). This folder appears as dropdown selectors initially on the left side menu.\
+Under that folder contains `sector` which provides the airspace, `sid` and `star` which contain the procedures, and `videomap` containing the videomap(s). There can be one or none files located under the parent folder, and these will appear in the dropdown when selecting the parent option. Files under these folders provide the `togglable options` to turn a layer/sector/area/procedure's visibility on or off. `Sector` files have another feature that allows individual groups of geometries/polgons to be toggled. Polygons that have the same name property or position will be grouped and toggled together.
+
 ```
 {
-    "type": "FeatureCollection",        # FQM3 STAR under EWR
+    "type": "FeatureCollection",        
     "name": "FQM3",                     # This will appear in the as an option
     "features": [
         {
@@ -69,7 +53,7 @@ Takes the <a href="https://geojson.org/">GEOJSON</a> <b>FeatureCollection</b> fo
 }
 
 {
-    "type": "FeatureCollection",        # EWR_SW.geojson (airspace layer)
+    "type": "FeatureCollection",        
     "name": "Southwest",
     "features": [
         {
@@ -94,20 +78,37 @@ Takes the <a href="https://geojson.org/">GEOJSON</a> <b>FeatureCollection</b> fo
     ]
 }
 ```
-#### Option Names
-When displaying options in the `popup-sidemenu`, the name will either be taken from the GEOJSON file if present, or the file name itself. `Sector/SID/STAR/Videomap` all follow this logic
+
+### Geometry
+`Procedures` require two parts, a Point which represents a NAVAID/Fix present and linestring connecting them together. LineStrings be combined into one geometry and will be rendered together. Points need to be seperate as each may/need have constraints/names.
+
+`Sectors` are standard FeatureCollections of multiple polygons. It is not recommended to utilize MultiPolygons as this can break some mechanics.
+
+`Videomaps` are rendered as is, ie no style changes or extras. This should be a FeatureCollection of linestrings.
+
+### Naming Scheme
+The name of the file that appears in the selection menu is taken from a `name` property under the `FeatureCollection` if present, else it uses the full file name.
 ```
 {
     "type": "FeatureCollection",
-    "name": "This will appear in the options when selecting something",
+    "name": "This will appear in the menu if entered.",
     "features": [..]
 }
 ```
-#### Coloring
-`Sector/SID/STAR` geometries can be colored if the option is present under `properties`. For SID/STARS they use `color` and for Sectors they `Fill`. Sector colors also affect the colors for the info box when a cursor hovers over a layer.
 
-#### Restrictions/Constraints
-`SID/STAR` will display route restrictions for both altitude and speed. `@120 = at 120` `+120 = at or above 120` `-120 = at or below 120`. Format is the same for speed restrictions.
+### Coloring
+`Procedures` utilize the `color` property is present, else uses a default black. This color affects the outline of the infobox and changes the outline of the icon if a `note` is present. `Sectors` utilize both a `fill` and `stroke` to define colors for the area and outline of the airspace.\
+The color option for `sectors` is also utilized for the cursor information box. <b>Bright colors will be adjusted to black to preserve readability.</b>\
+Recommend to use the same color for both, and will use the same color if only one is present/entered.
+```
+"color": "#ff0000"      # Procedures will use this color
+
+"Fill": "#BED2FF",      # Area/Stroke will be this color with differing opacity for stroke
+"Stroke": "#BED2FF"
+```
+
+### Restrictions/Constraints
+`Procedures` will display route restrictions for both altitude and speed. `@120 = at 120` `+120 = at or above 120` `-120 = at or below 120`. Format is the same for speed restrictions.
 ```
 "altitudes": ['@120'],
 "speed": ['+180K', '-220'],
@@ -118,9 +119,6 @@ When displaying options in the `popup-sidemenu`, the name will either be taken f
 "Low": 7000,
 "High": 7000,
 ```
-## Acknowledgments
-`https://github.com/vzoa/NctVisualizer` Original idea
 
-`https://github.com/mutsuyuki/Leaflet.SmoothWheelZoom` For, well, smooth scroll
-
-## TODO
+### Notes
+Notes for `Procedures` and `Sectors` will appears on the top right of the cursor.

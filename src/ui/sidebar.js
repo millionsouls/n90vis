@@ -9,6 +9,40 @@ const categoryMap = {
   videomap: "Videomap"
 };
 
+function buildCheckbox(id, label, checked = false) {
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `<input type="checkbox" id="${id}" ${checked ? 'checked' : ''}> <label for="${id}">${label}</label>`;
+  return wrapper;
+}
+
+function buildToggle(map, positionLayers, parentId, airport, categoryLabel, name, updateURLFromMapState) {
+  const container = document.createElement("div");
+  container.className = "rightbar-file";
+  container.id = parentId;
+
+  const header = document.createElement("div");
+  header.innerText = name;
+  header.style.fontWeight = "600";
+  container.appendChild(header);
+
+  Object.entries(positionLayers).forEach(([positionName, layer]) => {
+    const posId = `toggle-${airport}${categoryLabel}${name}${positionName}`;
+    const checkboxDiv = buildCheckbox(posId, positionName, true);
+    checkboxDiv.className = "position-id-toggle";
+
+    checkboxDiv.querySelector("input").addEventListener("change", function () {
+      if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
+        this.checked ? map.addLayer(layer) : map.removeLayer(layer);
+        updateURLFromMapState();
+      }
+    });
+
+    container.appendChild(checkboxDiv);
+  });
+
+  return container;
+}
+
 /**
  * Builds the sidebar menu with dropdowns and toggles
  * 
@@ -19,7 +53,7 @@ const categoryMap = {
  */
 function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
   const sidebar = document.getElementById("sidebar");
-  sidebar.innerHTML = ""; // Clear existing content
+  sidebar.innerHTML = "";
 
   Object.entries(GEODATA).forEach(([airport, categories]) => {
     const dropdown = document.createElement("div");
@@ -34,171 +68,118 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
     Object.entries(categories).forEach(([categoryLabel, namesOrObject]) => {
       let names;
-
-      // Detect if sectors are stored as nested object (new structure)
-      if (categoryLabel === 'sectors' && namesOrObject && typeof namesOrObject === 'object' && !Array.isArray(namesOrObject)) {
-        // Get file names (keys)
+      if (categoryLabel === 'sectors' && typeof namesOrObject === 'object' && !Array.isArray(namesOrObject)) {
         names = Object.keys(namesOrObject);
       } else if (Array.isArray(namesOrObject)) {
-        // Legacy flat array structure
         names = namesOrObject;
       } else {
-        // Unexpected data structure, skip this category
         return;
       }
 
       if (!names.length) return;
 
-      const groupDiv = document.createElement("div");
-      groupDiv.className = "sidemenu-toggle";
+      // sidemenu enabled via changing the length condition
       const displayName = categoryMap[categoryLabel] || categoryLabel;
-      groupDiv.innerHTML = `<span>${displayName}</span><i class="fa fa-caret-right"></i>`;
+      const targetContainer = names.length < 99 ? container : document.createElement("div");
 
-      const popup = document.createElement("div");
-      popup.className = "popup-sidemenu";
-      popup.style.display = "none";
+      if (names.length >= 99) {
+        targetContainer.className = "popup-sidemenu";
+        targetContainer.style.display = "none";
+
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "sidemenu-toggle";
+        groupDiv.innerHTML = `<span>${displayName}</span><i class="fa fa-caret-right"></i>`;
+
+        groupDiv.addEventListener("click", e => {
+          sidebar.querySelectorAll(".popup-sidemenu").forEach(p => {
+            if (p !== targetContainer) p.style.display = "none";
+          });
+
+          targetContainer.style.display = targetContainer.style.display === "none" ? "flex" : "none";
+          targetContainer.style.top = `${groupDiv.getBoundingClientRect().top}px`;
+          e.stopPropagation();
+        });
+
+        container.appendChild(groupDiv);
+        container.appendChild(targetContainer);
+      } else {
+        const label = document.createElement("div");
+        label.style.fontWeight = "600";
+        label.style.marginTop = "6px";
+        label.innerHTML = displayName
+        container.appendChild(label);
+      }
 
       names.forEach(name => {
-        const id = `toggle-${airport}${categoryLabel}${name}`;
+        const checkboxId = `toggle-${airport}${categoryLabel}${name}`;
+        const checkboxDiv = buildCheckbox(checkboxId, name);
+        targetContainer.appendChild(checkboxDiv);
 
-        const div = document.createElement("div");
-        div.innerHTML = `<input type="checkbox" id="${id}"> <label for="${id}">${name}</label>`;
-        popup.appendChild(div);
+        const checkbox = checkboxDiv.querySelector("input");
 
-        if (categoryLabel === 'sectors') {
-          const positionLayers = GEOLAYERS[airport]?.[categoryLabel]?.[name];
-          if (typeof positionLayers === 'object') {
-            const sectorCheckbox = div.querySelector("input");
-
-            sectorCheckbox.addEventListener("change", function () {
-              const rightbar = document.getElementById("rightbar");
-              const airportGroupId = `rightbar-airport-${airport}`;
-              const fileId = `rightbar-file-${airport}-${name}`;
-
-              // Remove if unchecked
-              if (!this.checked) {
-                const fileContainer = document.getElementById(fileId);
-                if (fileContainer) fileContainer.remove();
-
-                const airportContainer = document.getElementById(airportGroupId);
-                if (airportContainer && airportContainer.querySelectorAll('.rightbar-file').length === 0) {
-                  airportContainer.remove();
-                }
-
-                return;
-              }
-
-              // Create airport group if it doesn't exist
-              let airportContainer = document.getElementById(airportGroupId);
-              if (!airportContainer) {
-                airportContainer = document.createElement("div");
-                airportContainer.id = airportGroupId;
-                airportContainer.className = "rightbar-airport-group";
-                airportContainer.style.marginBottom = "16px";
-
-                const header = document.createElement("div");
-                header.className = "position-airport-header dropdown-toggle";
-                header.innerText = airport;
-                airportContainer.appendChild(header);
-
-                rightbar.appendChild(airportContainer);
-              }
-
-              // Create sector file container
-              const fileContainer = document.createElement("div");
-              fileContainer.className = "rightbar-file";
-              fileContainer.id = fileId;
-
-              const fileLabel = document.createElement("div");
-              fileLabel.innerText = name; // sector file name, e.g., east/west
-              fileLabel.style.fontWeight = "600";
-              fileContainer.appendChild(fileLabel);
-
-              Object.entries(positionLayers).forEach(([positionName, layer]) => {
-                const posId = `toggle-${airport}${categoryLabel}${name}${positionName}`;
-                const div = document.createElement("div");
-                div.className = `position-id-toggle`
-                div.innerHTML = `<input type="checkbox" id="${posId}" checked> <label for="${posId}">${positionName}</label>`;
-                fileContainer.appendChild(div);
-
-                div.querySelector("input").addEventListener("change", function () {
-                  if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-                    if (!this.checked) {
-                      map.removeLayer(layer);
-                    } else {
-                      map.addLayer(layer);
-                    }
-
-                    updateURLFromMapState();
-                  }
-                });
-              });
-
-              airportContainer.appendChild(fileContainer);
-            });
-          }
-        }
-
-
-        div.querySelector("input").addEventListener("change", function () {
+        checkbox.addEventListener("change", function () {
           const entry = GEOLAYERS[airport]?.[categoryLabel]?.[name];
           if (!entry) return;
 
-          // If the entry is a single Leaflet Layer or LayerGroup (legacy or videomap, stars, sids)
           if (entry instanceof L.Layer || entry instanceof L.LayerGroup) {
-            if (this.checked) {
-              map.addLayer(entry);
-            } else {
-              map.removeLayer(entry);
-            }
-          }
-          // If entry is an object of position-layer groups (sectors)
-          else if (typeof entry === 'object') {
+            this.checked ? map.addLayer(entry) : map.removeLayer(entry);
+          } else if (typeof entry === 'object') {
             Object.values(entry).forEach(layer => {
               if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-                if (this.checked) {
-                  map.addLayer(layer);
-                } else {
-                  map.removeLayer(layer);
-                }
+                this.checked ? map.addLayer(layer) : map.removeLayer(layer);
               }
             });
           }
+
           updateURLFromMapState();
         });
+
+        // For sectors, manage the right bar expansion
+        if (categoryLabel === 'sectors') {
+          const positionLayers = GEOLAYERS[airport]?.[categoryLabel]?.[name];
+          if (typeof positionLayers !== 'object') return;
+
+          checkbox.addEventListener("change", function () {
+            const rightbar = document.getElementById("rightbar");
+            const groupId = `rightbar-airport-${airport}`;
+            const fileId = `rightbar-file-${airport}-${name}`;
+
+            if (!this.checked) {
+              const fileContainer = document.getElementById(fileId);
+              if (fileContainer) fileContainer.remove();
+
+              const groupContainer = document.getElementById(groupId);
+              if (groupContainer && groupContainer.querySelectorAll('.rightbar-file').length === 0) {
+                groupContainer.remove();
+              }
+              return;
+            }
+
+            let groupContainer = document.getElementById(groupId);
+            if (!groupContainer) {
+              groupContainer = document.createElement("div");
+              groupContainer.id = groupId;
+              groupContainer.className = "rightbar-airport-group";
+              groupContainer.style.marginBottom = "16px";
+
+              const header = document.createElement("div");
+              header.className = "position-airport-header dropdown-toggle";
+              header.innerText = airport;
+
+              groupContainer.appendChild(header);
+              rightbar.appendChild(groupContainer);
+            }
+
+            const fileContainer = buildToggle(map, positionLayers, fileId, airport, categoryLabel, name, updateURLFromMapState);
+            groupContainer.appendChild(fileContainer);
+          });
+        }
       });
-
-      groupDiv.addEventListener("click", e => {
-        // Close other popups first
-        sidebar.querySelectorAll(".popup-sidemenu").forEach(p => {
-          if (p !== popup) p.style.display = "none";
-        });
-
-        popup.style.display = popup.style.display === "none" ? "flex" : "none";
-        // Calculate the top position relative to the viewport
-        const rect = groupDiv.getBoundingClientRect();
-        popup.style.top = `${rect.top}px`;
-
-        e.stopPropagation();
-      });
-
-      container.appendChild(groupDiv);
-      container.appendChild(popup);
     });
 
     dropdown.appendChild(toggle);
     dropdown.appendChild(container);
     sidebar.appendChild(dropdown);
-
-    // Close popups when clicking outside
-    document.body.addEventListener("click", (e) => {
-      const clickedInsidePopup = e.target.closest(".popup-sidemenu");
-      if (!clickedInsidePopup) {
-        sidebar.querySelectorAll(".popup-sidemenu").forEach(p => {
-          p.style.display = "none";
-        });
-      }
-    });
   });
 }
 

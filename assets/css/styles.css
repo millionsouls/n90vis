@@ -33,8 +33,8 @@
   left: 50%;
   transform: translateX(-50%);
   width: fit-content;
-  background: var(--div-back-white);
-  color: var(--textcolor-white-dark);
+  background: var(--bg-one);
+  color: var(--textcolor-dark);
   padding: 7px;
   text-align: center;
   font-size: 14px;
@@ -47,7 +47,7 @@
   justify-content: center;
 }
 #page-footer a {
-  color: var(--textcolor-white-dark);
+  color: var(--textcolor-dark);
   text-decoration: none;
   display: inline-flex;
   align-items: center;

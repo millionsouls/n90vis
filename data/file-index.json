@@ -1,15 +1,15 @@
 {
   "abe": [
-    "sectors/ABE.geojson"
+    "ABE.geojson"
   ],
   "avp": [
-    "sectors/AVP.geojson"
+    "AVP.geojson"
   ],
   "bgm": [
-    "sectors/BGM.geojson"
+    "BGM.geojson"
   ],
   "elm": [
-    "sectors/ELM.geojson"
+    "ELM.geojson"
   ],
   "ewr": [
     "sectors/EWR_SW.json",
@@ -39,6 +39,6 @@
     "sectors/MDT_W.json"
   ],
   "wri": [
-    "sectors/WRI.geojson"
+    "WRI.geojson"
   ]
 }

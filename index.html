@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>ZNY TRACON Visualizer</title>
+  <title>ZNY Airspace Visualizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -23,19 +23,21 @@
   <!-- Info box under cursor-->
   <div id="feature-info-box"></div>
   <div id="notes-hover-box" style="display: none; position: fixed; z-index: 2000;"></div>
+  <div id="sector-notes-container"></div>
 
   
   <!-- Sidebar -->
-  <button id="sidebar-toggle">&#9776;</button> 
-  <button id="rightbar-toggle">&#9776;</button> 
+  <button id="sidebar-toggle" style="color: var(--textcolor-dark);">&#9776;</button> 
+  <button id="rightbar-toggle" style="color: var(--textcolor-dark);">&#9776;</button> 
   <div id="menu">
     <div id="information" class="flex-center">
-      <h4>ZNY TRACON Visualizer</h4>
-      <h5 style="color:red;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
+      <h4 style="color: var(--textcolor-dark); margin-bottom:0px;">ZNY Airspace Visualizer</h4>
+      <h5 style="color:red; margin-bottom:0px;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
     </div>
     <div id="general-options" class="flex-center">
         <button type="button" id="toggle-basemap" class="btn">Toggle map</button>
         <button type="button" id="reset-layers" class="btn">Reset all layers</button>
+        <button type="button" id="reset-layers" onclick="toggleDarkMode()" class="btn">Dark Mode</button>
     </div>
     <div id="search-section">
       <input type="text" id="search-input" placeholder="Search">
@@ -64,7 +66,7 @@
 
   <footer id="page-footer">
     <a href="https://github.com/millionsouls/n90vis" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
-      <i class="fa fa-github" aria-hidden="true"></i>
+      <i class="fa fa-github footer-logo" aria-hidden="true"></i>
       GitHub
     </a>
 
@@ -100,5 +102,9 @@
         resultsBox.style.display = "none";
       }
     });
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark-mode');
+    }
 </script>
 </html>

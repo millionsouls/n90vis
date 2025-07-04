@@ -88,7 +88,6 @@ window.LayerControl = {
             }
           });
         } else {
-          // ... other categories unchanged
           value.forEach(name => {
             const layer = GEOLAYERS[airport]?.[category]?.[name];
             if (!layer) return;
@@ -104,6 +103,8 @@ window.LayerControl = {
         }
       });
     });
+
+    updateURLFromMapState()
   }
 };
 

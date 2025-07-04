@@ -9,7 +9,7 @@ Display TRACON airspace boundaries and shelves on Leaflet/OSM map layer. Additio
 ### Searching
 Search will find string matches for either file names, or airports/specific positions. IE: Typing `JFK` will pull up all Kennedy files, and `FQM3` will only show the FQM3 arrival.
 ### URL Linking
-Selected `sectors`, `procedures`, and `videomaps` will generate a unique URL that can be shared and loaded to the specific configuration. Please not toggling individual positions for a `sector` will not reflect changes in the URL. <b>However, this feature is builtin to the code and can be enable if the developer desires.</b>
+Selected `sectors`, `procedures`, and `videomaps` will generate a unique URL that can be shared and loaded to the specific configuration. Please note toggling individual positions for a `sector` will not reflect changes in the URL. <b>However, this feature is builtin to the code..</b>
 ### Feature Info
 Additional information pertaining to a sector's airspace or notes on a procedure will appear when hovered over. Airspace limits for `sectors` are also displayed.
 

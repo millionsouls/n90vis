@@ -69,7 +69,6 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
     matches.forEach(({ airport, category, name }) => {
       const id = `toggle-${airport}${category}${name}`;
-      const originalCheckbox = document.getElementById(id);
       const layer = GEOLAYERS[airport]?.[category]?.[name];
       const checkbox = document.getElementById(id);
 

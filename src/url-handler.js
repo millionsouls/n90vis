@@ -4,32 +4,32 @@
  */
 
 const categoryAbbr = {
-    sectors: 1,
-    stars: 2,
-    sids: 3,
-    videomap: 4,
+  sectors: 1,
+  stars: 2,
+  sids: 3,
+  videomap: 4,
 };
 const categoryAbbrReverse = {
-    1: 'sectors',
-    2: 'stars',
-    3: 'sids',
-    4: 'videomap'
+  1: 'sectors',
+  2: 'stars',
+  3: 'sids',
+  4: 'videomap'
 };
 const includePositions = false;
 
 function encBase64(str) {
-    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 function decBase64(str) {
-    str = str.replace(/-/g, '+').replace(/_/g, '/');
-    while (str.length % 4) str += '=';
-    return atob(str);
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return atob(str);
 }
 function compress(str) {
-    return LZString.compressToEncodedURIComponent(str);
+  return LZString.compressToEncodedURIComponent(str);
 }
 function decompress(str) {
-    return LZString.decompressFromEncodedURIComponent(str);
+  return LZString.decompressFromEncodedURIComponent(str);
 }
 
 /**
@@ -168,12 +168,12 @@ function decodeLayers(encoded) {
  * @returns 
  */
 function getEnabledLayersFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    const layerParam = params.get("l");
+  const params = new URLSearchParams(window.location.search);
+  const layerParam = params.get("l");
 
-    if (!layerParam) return {};
+  if (!layerParam) return {};
 
-    return decodeLayers(layerParam);
+  return decodeLayers(layerParam);
 }
 
 /**
@@ -182,16 +182,16 @@ function getEnabledLayersFromURL() {
  * @returns 
  */
 function updateURLFromMapState() {
-    if (!window.LayerControl) return;
-    const enabled = window.LayerControl.getActiveLayers()
-    const url = new URL(window.location);
+  if (!window.LayerControl) return;
+  const enabled = window.LayerControl.getActiveLayers()
+  const url = new URL(window.location);
 
-    if (Object.keys(enabled).length > 0) {
-        url.searchParams.set("l", encodeLayers(enabled));
-    } else {
-        url.searchParams.delete("l");
-    }
-    history.replaceState(null, "", url);
+  if (Object.keys(enabled).length > 0) {
+    url.searchParams.set("l", encodeLayers(enabled));
+  } else {
+    url.searchParams.delete("l");
+  }
+  history.replaceState(null, "", url);
 }
 
 export { getEnabledLayersFromURL, updateURLFromMapState };

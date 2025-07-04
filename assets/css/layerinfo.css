@@ -1,8 +1,9 @@
 @import url('./common.css');
 
-/* Style for the feature info box */
+/* Sector/Airspace information */
 #feature-info-box {
   width: fit-content;
+  max-width: 230px;
   display: none;
   position: fixed;
   pointer-events: none;
@@ -11,29 +12,40 @@
   padding: 4px;
   font-size: 14px;
   box-shadow: 0px 0px 10px 8px rgba(0,0,0,0.5);
-  backdrop-filter: blur(1px);
+  backdrop-filter: blur(1.6px);
   /*-webkit-text-stroke: 0.3px black;*/
 }
 .feature-info-row {
   display: flex;
-  flex-direction: row;
-  align-items: top;
-  padding: 4px;
-  z-index: 1200;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 5px 4px 5px;
   margin: 3px 1px 3px 1px;
+  border-radius: 4px;
   box-shadow: 0 0px 20px rgba(0,0,0,0.7);
 }
+.feature-info-header {
+  display: flex;
+  gap: 2px;
+  align-items: flex-start;
+}
 .feature-info-pos {
-  width: 150px;
+  width: 140px;
   font-weight: 700;
-  padding-right: 5px;
   white-space: nowrap;
   overflow: hidden;
+}
+.feature-info-altitudes {
+  display: flex;
+  flex-direction: column;
+}
+.feature-info-alt-row {
+  display: flex;
 }
 .feature-info-low {
   width: fit-content;
   text-align: center;
-  padding-right: 5px;
+  margin-right: 20px;
   white-space: nowrap;
   font-weight: 500;
 }
@@ -43,17 +55,66 @@
   white-space: nowrap;
   font-weight: 500;
 }
+.feature-info-notes {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 0px 0px 0px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
 
 /* Notes hover box */
 #notes-hover-box {
-  background: #333;
-  color: white;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 300px;
+  background: var(--bg-one);
+  color: var(--textcolor-dark);
+  box-shadow: 0 0px 20px rgba(0,0,0,0.7);
   padding: 6px 10px;
   border-radius: 5px;
   font-size: 12px;
-  pointer-events: none;
   white-space: pre-wrap;
   max-width: 200px;
+}
+
+/* [UNUSED] Styles for notes under sector layer */
+#sector-notes-container {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+  max-width: 90%;
+  pointer-events: none;
+}
+.sector-note {
+  display: flex;
+  justify-content: space-between;
+  background: var(--bg-one);
+  color: var(--textcolor-dark);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 0px 10px rgba(0,0,0,0.7);
+  max-width: 300px;
+  width: 100%;
+  white-space: pre-wrap;
+}
+.sector-note-pos {
+  font-weight: bold;
+  margin-right: 10px;
+  min-width: 20px;
+  text-align: left;
+}
+.sector-note-content {
+  flex: 1;
+  text-align: left;
 }
 
 /* Style for the procedure labels */
@@ -87,14 +148,14 @@
 }
 /* AT OR ABOVE, display border on bottom */
 .res-label.abv {
-  border-bottom: 2px solid var(--textcolor-white-darker);
+  border-bottom: 2px solid var(--textcolor-darker);
 }
 /* AT OR BELOW, display the border on top */
 .res-label.blw {
-  border-top: 2px solid var(--textcolor-white-darker);
+  border-top: 2px solid var(--textcolor-darker);
 }
 /* AT, display both top and bottom */
 .res-label.at {
-  border-top: 2px solid var(--textcolor-white-darker);
-  border-bottom: 2px solid var(--textcolor-white-darker);
+  border-top: 2px solid var(--textcolor-darker);
+  border-bottom: 2px solid var(--textcolor-darker);
 }

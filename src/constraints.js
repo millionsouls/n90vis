@@ -99,22 +99,22 @@ async function parseSVG(props, type, svg) {
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElem = svgDoc.querySelector("svg");
 
-    svgElem.removeAttribute("width");
-    svgElem.removeAttribute("height");
     svgElem.setAttribute("width", "40");
     svgElem.setAttribute("height", "40");
 
     svgElem.querySelectorAll("[style]").forEach(el => {
       let style = el.getAttribute("style");
+      let type = el.getAttribute("class") || "";
 
       if (style.includes("stroke-width")) {
         style = style.replace(/stroke-width:[^;]+;/, `stroke-width:1.5;`);
       }
-      if (style.includes("fill-opacity")) {
+      if (type.includes("background")) {
         style = style.replace(/fill-opacity:[^;]+;/, `fill-opacity:0.8;`);
       }
       if (props.notes != null) {
         style = style.replace(/stroke:[^;]+;/, `stroke:${props.color};`);
+        style = style.replace(/stroke-width:[^;]+;/, `stroke-width:3;`);
       }
 
       el.setAttribute("style", style);
@@ -155,7 +155,6 @@ async function buildMarker(props, type="req_int") {
   }
 
   return `
-    <div style="display: flex; flex-direction: column; align-items: center;">
       ${shapeHtml}
       <div class="procedure-label" style="border-color:${props.color}; ">
         <div style="font-size:12px; text-align:center; white-space: nowrap;">
@@ -166,7 +165,6 @@ async function buildMarker(props, type="req_int") {
           ${speedHtml}
         </div>
       </div>
-    </div>
   `;
 }
 

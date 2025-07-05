@@ -14,4 +14,5 @@ const ICONS = {
   "req_int": "121_On_Request_Fly_By_INT.svg",
   "req_way": "121_On_Request_Fly_By_Waypoint.svg",
   "req_over_way": "121_On_Request_Fly_Over_Waypoint.svg",
+  "arrow": "994_Line_Arrow.svg",
 }

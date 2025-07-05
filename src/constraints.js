@@ -99,17 +99,20 @@ async function parseSVG(props, type, svg) {
     const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
     const svgElem = svgDoc.querySelector("svg");
 
-    svgElem.setAttribute("width", "40");
-    svgElem.setAttribute("height", "40");
+    const isArrow = type.toLowerCase() === 'arrow';
+    const size = isArrow ? 60 : 40;
+
+    svgElem.setAttribute("width", size);
+    svgElem.setAttribute("height", size);
 
     svgElem.querySelectorAll("[style]").forEach(el => {
       let style = el.getAttribute("style");
-      let type = el.getAttribute("class") || "";
+      let cls = el.getAttribute("class") || "";
 
       if (style.includes("stroke-width")) {
         style = style.replace(/stroke-width:[^;]+;/, `stroke-width:1.5;`);
       }
-      if (type.includes("background")) {
+      if (cls.includes("background")) {
         style = style.replace(/fill-opacity:[^;]+;/, `fill-opacity:0.8;`);
       }
       if (props.notes != null) {
@@ -120,7 +123,13 @@ async function parseSVG(props, type, svg) {
       el.setAttribute("style", style);
     });
 
-    return `<div style="width:14px; height:14px; display: flex; align-items: center; justify-content: center; padding-bottom: 5px;">${svgElem.outerHTML}</div>`;
+    const containerSize = isArrow ? 24 : 14;
+
+    return `
+      <div style="width:${containerSize}px; height:${containerSize}px; display: flex; align-items: center; justify-content: center; padding-bottom: 5px;">
+        ${svgElem.outerHTML}
+      </div>
+    `;
   } catch (err) {
     console.warn(`SVG load failed: ${fullPath}`, err);
     return null;

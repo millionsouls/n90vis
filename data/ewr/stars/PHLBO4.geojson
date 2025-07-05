@@ -304,7 +304,9 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "arrow",
+                "heading": 25
             },
             "geometry": {
                 "type": "Point",
@@ -509,6 +511,25 @@
                         -74.56018888,
                         40.83038611
                     ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "id": "PHLBO",
+                "altitudes": [],
+                "speed": [],
+                "notes": null,
+                "color": "#0000ff",
+                "type": "arrow",
+                "heading": 25
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -74.66018888,
+                    40.83038611
                 ]
             }
         }

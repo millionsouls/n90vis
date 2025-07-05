@@ -56,8 +56,9 @@ function loadPD(map, data, fmtName) {
 
     if (f.geometry.type === "Point") {
       const coords = f.geometry.coordinates;
+
       const markerDiv = document.createElement("div");
-      markerDiv.style = 'display: flex; flex-direction: column; align-items: center;'
+      markerDiv.style = 'display: flex; flex-direction: column; align-items: center;';
       markerDiv.innerHTML = 'Loading';
 
       const marker = L.marker([coords[1], coords[0]], {
@@ -68,9 +69,22 @@ function loadPD(map, data, fmtName) {
           iconAnchor: [6, 6]
         })
       });
+
       const feature = { properties: props };
       handleFeatureHover(feature, marker);
-      buildMarker(props, props.type).then(html => { markerDiv.innerHTML = html })
+
+      buildMarker(props, props.type).then(html => {
+        markerDiv.innerHTML = html;
+
+        // If this is an arrow, rotate the SVG directly
+        if (props.type === 'arrow' && typeof props.heading === 'number') {
+          const svg = markerDiv.querySelector('svg');
+          if (svg) {
+            svg.style.transform = `rotate(${props.heading}deg)`;
+            svg.style.transformOrigin = 'center center';
+          }
+        }
+      });
 
       markers.push(marker);
     } else if (f.geometry.type === "LineString") {

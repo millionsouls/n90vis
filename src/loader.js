@@ -73,17 +73,8 @@ function loadPD(map, data, fmtName) {
       const feature = { properties: props };
       handleFeatureHover(feature, marker);
 
-      buildMarker(props, props.type).then(html => {
+      buildMarker(props, props.type, props.icon).then(html => {
         markerDiv.innerHTML = html;
-
-        // If this is an arrow, rotate the SVG directly
-        if (props.type === 'arrow' && typeof props.heading === 'number') {
-          const svg = markerDiv.querySelector('svg');
-          if (svg) {
-            svg.style.transform = `rotate(${props.heading}deg)`;
-            svg.style.transformOrigin = 'center center';
-          }
-        }
       });
 
       markers.push(marker);

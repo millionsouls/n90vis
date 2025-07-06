@@ -38,7 +38,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -55,7 +56,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -72,7 +74,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -89,7 +92,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -123,7 +127,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": "HYTRA and SWANN transitions only",
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -236,7 +241,8 @@
                 ],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "icon": "121_On_Request_Fly_By_Waypoint.svg"
             },
             "geometry": {
                 "type": "Point",
@@ -287,7 +293,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "icon": "121_On_Request_Fly_By_Waypoint.svg"
             },
             "geometry": {
                 "type": "Point",
@@ -305,8 +312,8 @@
                 "speed": [],
                 "notes": null,
                 "color": "#0000ff",
-                "type": "arrow",
-                "heading": 25
+                "icon": "994_Line_Arrow.svg",
+                "heading": 12
             },
             "geometry": {
                 "type": "Point",
@@ -323,7 +330,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": "HYTRA transition by ATC only",
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -340,7 +348,8 @@
                 "altitudes": [],
                 "speed": [],
                 "notes": null,
-                "color": "#0000ff"
+                "color": "#0000ff",
+                "type": "req_way"
             },
             "geometry": {
                 "type": "Point",
@@ -511,25 +520,6 @@
                         -74.56018888,
                         40.83038611
                     ]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
-                "id": "PHLBO",
-                "altitudes": [],
-                "speed": [],
-                "notes": null,
-                "color": "#0000ff",
-                "type": "arrow",
-                "heading": 25
-            },
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    -74.66018888,
-                    40.83038611
                 ]
             }
         }

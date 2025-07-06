@@ -88,6 +88,7 @@ async function parseSVG(props, type, svg) {
     svg = ICONS[type.toLowerCase()];
     if (!svg) return null;
   }
+  console.log(type, svg)
   const fullPath = `${iconPath}${svg}`;
 
   try {
@@ -100,7 +101,7 @@ async function parseSVG(props, type, svg) {
     const svgElem = svgDoc.querySelector("svg");
 
     const isArrow = type.toLowerCase() === 'arrow';
-    const size = isArrow ? 60 : 40;
+    const size = isArrow ? 25 : 40;
 
     svgElem.setAttribute("width", size);
     svgElem.setAttribute("height", size);
@@ -117,16 +118,23 @@ async function parseSVG(props, type, svg) {
       }
       if (props.notes != null) {
         style = style.replace(/stroke:[^;]+;/, `stroke:${props.color};`);
-        style = style.replace(/stroke-width:[^;]+;/, `stroke-width:3;`);
+        style = style.replace(/stroke-width:[^;]+;/, `stroke-width:1.5;`);
       }
 
       el.setAttribute("style", style);
     });
 
-    const containerSize = isArrow ? 24 : 14;
+    const arrowPath = svgElem.querySelector('#path1476');
+    if (arrowPath) {
+      arrowPath.setAttribute('fill', props.color);
+
+      svgElem.style.transform = `rotate(${props.heading}deg)`;
+      svgElem.style.transformOrigin = 'center center';
+      svgElem.style.display = 'block';
+    }
 
     return `
-      <div style="width:${containerSize}px; height:${containerSize}px; display: flex; align-items: center; justify-content: center; padding-bottom: 5px;">
+      <div style="width:12px; height:12px; display: flex; align-items: center; justify-content: center; padding-bottom: 5px;">
         ${svgElem.outerHTML}
       </div>
     `;
@@ -140,7 +148,7 @@ async function parseSVG(props, type, svg) {
  * Construct HTML for a marker
  * 
  */
-async function buildMarker(props, type="req_int") {
+async function buildMarker(props, type, icon) {
   const altitude = fmtConstraint(props.altitudes)
   const speed = fmtConstraint(props.speeds)
 
@@ -148,7 +156,20 @@ async function buildMarker(props, type="req_int") {
   let speedHtml = buildTextHTML(speed)
   let shapeHtml = ''
 
-  if (type == "dot" && !props.icon) {
+  const defaultType = "req_way"
+  const defaultIcon = "121_On_Request_Fly_By_INT.svg"
+
+  if (!type && !icon) {
+    type = defaultType;
+    icon = defaultIcon;
+  } else if (!type && icon) {
+    const entry = Object.entries(ICONS).find(([key, val]) => val === icon);
+    type = entry ? entry[0] : defaultType;
+  } else if (type && !icon) {
+    icon = ICONS[type] || defaultIcon;
+  }
+
+  if (type == "dot" && !icon) {
     shapeHtml = `
       <div style="
         width:14px; 
@@ -159,8 +180,8 @@ async function buildMarker(props, type="req_int") {
         margin-bottom: 2px;">
       </div>
     `;
-  } else if (props.icon || type) {
-    shapeHtml = await parseSVG(props, type, props.icon, props.color);
+  } else if (icon || type) {
+    shapeHtml = await parseSVG(props, type, icon, props.color);
   }
 
   return `

@@ -11,7 +11,7 @@ const CONFIG = {
   center: [40.703376, -74.015415],
   zoom: 7.5,
   minZoom: 5,
-  maxZoom: 15,
+  maxZoom: 18,
   bounds: [
     [20, -140],
     [50, -60]
@@ -127,6 +127,17 @@ document.getElementById('reset-layers').addEventListener('click', function () {
   rightbar.querySelectorAll(".rightbar-airport-group").forEach(group => group.remove());
 
   updateURLFromMapState();
+});
+
+document.getElementById('toggle-markers').addEventListener('click', function () {
+  const icons = document.querySelectorAll('.procedure-label');
+  let anyVisible = Array.from(icons).some(el => el.style.display !== 'none');
+
+  icons.forEach(icon => {
+    icon.style.display = anyVisible ? 'none' : '';
+  });
+
+  this.classList.toggle('off', anyVisible);
 });
 
 export { map }

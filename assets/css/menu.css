@@ -121,9 +121,21 @@
   text-align: center
 }
 #general-options {
-  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 5px;
-  text-align: center
+  padding: 10px;
+  text-align: center;
+}
+#general-options > button {
+  margin: 0px;
+}
+#general-options > button:only-child,
+#general-options > button:nth-last-child(2):first-child {
+  grid-column: span 2;
+}
+#general-options > button:nth-child(odd):last-child {
+  grid-column: span 2;
 }
 
 /* Searchin features */
@@ -137,6 +149,8 @@
   font-size: 14px;
   border-radius: 4px;
   border: 0px;
+  background: var(--bg-two);
+  color: var(--textcolor-dark);
   box-sizing: border-box;
 }
 #search-results {

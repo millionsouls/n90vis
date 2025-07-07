@@ -27,6 +27,8 @@ All files must be in the `GEOJSON` format and contain a `FeatureCollection`. Bel
 The general file structure is as follows: [`data/`](data) is the parent file where everything should be stored. Each folder under `data/` represents a unique <i>option or group</i> such as [`JFK`](data/jfk/). This folder appears as dropdown selectors initially on the left side menu.\
 Under that folder contains `sector` which provides the airspace, `sid` and `star` which contain the procedures, and `videomap` containing the videomap(s). There can be one or none files located under the parent folder, and these will appear in the dropdown when selecting the parent option. Files under these folders provide the `togglable options` to turn a layer/sector/area/procedure's visibility on or off. `Sector` files have another feature that allows individual groups of geometries/polgons to be toggled. Polygons that have the same name property or position will be grouped and toggled together.
 
+<b>If new files are added or existing names are changed, [file-index.json](data/file-index.json) must be updated to incorporate the changes for the files to be loaded.</b> This can be done automatically via [gen-file-index](src/gen-file-index.py) or manually by the user.
+
 ```
 {
     "type": "FeatureCollection",        

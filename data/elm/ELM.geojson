@@ -108,8 +108,7 @@
                 "Fill": "#FF73DF",
                 "Stroke": "#FF73DF"
             }
-        },
-        {
+        },{
             "type": "Feature",
             "id": 142,
             "geometry": {

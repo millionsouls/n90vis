@@ -88,7 +88,6 @@ async function parseSVG(props, type, svg) {
     svg = ICONS[type.toLowerCase()];
     if (!svg) return null;
   }
-  console.log(type, svg)
   const fullPath = `${iconPath}${svg}`;
 
   try {
@@ -101,7 +100,7 @@ async function parseSVG(props, type, svg) {
     const svgElem = svgDoc.querySelector("svg");
 
     const isArrow = type.toLowerCase() === 'arrow';
-    const size = isArrow ? 25 : 40;
+    const size = isArrow ? 20 : 40;
 
     svgElem.setAttribute("width", size);
     svgElem.setAttribute("height", size);

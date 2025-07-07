@@ -129,4 +129,15 @@ document.getElementById('reset-layers').addEventListener('click', function () {
   updateURLFromMapState();
 });
 
+document.getElementById('toggle-markers').addEventListener('click', function () {
+  const icons = document.querySelectorAll('.procedure-label');
+  let anyVisible = Array.from(icons).some(el => el.style.display !== 'none');
+
+  icons.forEach(icon => {
+    icon.style.display = anyVisible ? 'none' : '';
+  });
+
+  this.classList.toggle('off', anyVisible);
+});
+
 export { map }

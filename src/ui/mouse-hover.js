@@ -76,10 +76,10 @@ function buildFeatureInfoHTML(features) {
 
     altRows.sort((a, b) => {
       const parse = v => v === 'SFC' ? 0 : parseInt(v, 10) || 0
-      return parse(a.low) - parse(b.low)
+      return parse(b.low) - parse(a.low)
     });
 
-    const minLow = Math.min(...altRows.map(r => r.low === 'SFC' ? 0 : parseInt(r.low, 10) || 0))
+    const minLow = Math.max(...altRows.map(r => r.low === 'SFC' ? 0 : parseInt(r.low, 10) || 0))
     const color = feats[0].properties.Fill || "#222"
     const isBright = isColorBright(color)
     const textColor = isBright ? '#000' : '#fff'
@@ -109,7 +109,7 @@ function buildFeatureInfoHTML(features) {
     return { html, minLow };
   });
 
-  groupBlocks.sort((a, b) => a.minLow - b.minLow)
+  groupBlocks.sort((a, b) => b.minLow - a.minLow)
 
   return groupBlocks.map(g => g.html).join('');
 }

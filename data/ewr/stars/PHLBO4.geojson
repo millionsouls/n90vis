@@ -312,8 +312,7 @@
                 "speed": [],
                 "notes": null,
                 "color": "#0000ff",
-                "icon": "994_Line_Arrow.svg",
-                "heading": 12
+                "type": "req_over_way"
             },
             "geometry": {
                 "type": "Point",

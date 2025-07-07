@@ -6,17 +6,18 @@
 
 import { buildMarker } from './constraints.js';
 import { handleFeatureHover } from './ui/mouse-hover.js';
-
-const categoryMap = {
-  sectors: "Sectors",
-  stars: "STARs",
-  sids: "SIDs",
-  videomap: "Videomap"
-};
+import { MarkerManager } from './markerManager.js'
+import { map } from './map.js'
 
 const GEODATA = {};
 const GEOLAYERS = {};
 const fetchPromises = [];
+
+let markerManager = null;
+
+function setMarkerManager(manager) {
+  markerManager = manager;
+}
 
 function ensurePane(map, paneName, zIndex) {
   if (!map.getPane(paneName)) {
@@ -76,6 +77,12 @@ function loadPD(map, data, fmtName) {
       buildMarker(props, props.type, props.icon).then(html => {
         markerDiv.innerHTML = html;
       });
+
+      
+      if (markerManager) {
+        markerManager.addMarker(marker, L.latLng(...f.geometry.coordinates));
+      }
+
 
       markers.push(marker);
     } else if (f.geometry.type === "LineString") {
@@ -222,4 +229,5 @@ function loadGeoFiles(GEOFILES, map) {
   });
 }
 
-export { loadGeoFiles, GEODATA, GEOLAYERS };
+export { loadGeoFiles, GEODATA, GEOLAYERS, setMarkerManager };
+

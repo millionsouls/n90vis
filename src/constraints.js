@@ -88,7 +88,6 @@ async function parseSVG(props, type, svg) {
     svg = ICONS[type.toLowerCase()];
     if (!svg) return null;
   }
-  console.log(type, svg)
   const fullPath = `${iconPath}${svg}`;
 
   try {

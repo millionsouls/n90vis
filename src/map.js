@@ -4,8 +4,9 @@
  * Leaflet map configuration and base layers setup
  */
 
-import { GEOLAYERS } from './loader.js'
 import { updateURLFromMapState } from './url-handler.js';
+import { GEOLAYERS, setMarkerManager } from './loader.js';
+import { MarkerManager } from './markerManager.js';
 
 const CONFIG = {
   center: [40.703376, -74.015415],
@@ -47,6 +48,9 @@ const map = L.map('map', {
 L.control.scale({ position: 'bottomright' }).addTo(map);
 L.control.layers(baseLayers, null, { position: 'topright', collapsed: false }).addTo(map);
 L.control.zoom({ position: 'topright' }).addTo(map);
+
+const markerManager = new MarkerManager(map);
+setMarkerManager(markerManager);
 
 // Delay DOM restructuring to ensure controls exist
 setTimeout(() => {

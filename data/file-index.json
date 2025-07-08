@@ -1,44 +1,51 @@
 {
-  "abe": [
-    "ABE.geojson"
-  ],
-  "avp": [
-    "AVP.geojson"
-  ],
-  "bgm": [
-    "BGM.geojson"
-  ],
-  "elm": [
-    "ELM.geojson"
-  ],
-  "ewr": [
-    "sectors/EWR_SW.json",
-    "stars/FQM3.geojson",
-    "stars/PHLBO4.geojson"
-  ],
-  "hpn": [
-    "sectors/HPN_16.json",
-    "sectors/HPN_34.json"
-  ],
-  "isp": [
-    "sectors/ISP.geojson"
-  ],
-  "jfk": [
-    "sectors/JFK_4s.json",
-    "stars/PARCH3.geojson",
-    "videomap/JFK.geojson"
-  ],
-  "lga": [
-    "sectors/LGAD4_L4RX31.json"
-  ],
-  "lib": [
-    "sectors/LIB.geojson"
-  ],
-  "mdt": [
-    "sectors/MDT_E.json",
-    "sectors/MDT_W.json"
-  ],
-  "wri": [
-    "WRI.geojson"
-  ]
+  "tracon": {
+    "abe": [
+      "ABE.geojson"
+    ],
+    "avp": [
+      "AVP.geojson"
+    ],
+    "bgm": [
+      "BGM.geojson"
+    ],
+    "elm": [
+      "ELM.geojson"
+    ],
+    "ewr": [
+      "sectors/EWR_SW.json",
+      "stars/FQM3.geojson",
+      "stars/PHLBO4.geojson"
+    ],
+    "hpn": [
+      "sectors/HPN_16.json",
+      "sectors/HPN_34.json"
+    ],
+    "isp": [
+      "sectors/ISP.geojson"
+    ],
+    "jfk": [
+      "sectors/JFK_4s.json",
+      "stars/PARCH3.geojson",
+      "videomap/JFK.geojson"
+    ],
+    "lga": [
+      "sectors/LGAD4_L4RX31.json"
+    ],
+    "lib": [
+      "sectors/LIB.geojson"
+    ],
+    "mdt": [
+      "sectors/MDT_E.json",
+      "sectors/MDT_W.json"
+    ],
+    "wri": [
+      "WRI.geojson"
+    ]
+  },
+  "enroute": {
+    "area-a": [
+      "N56.geojson"
+    ]
+  }
 }

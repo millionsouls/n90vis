@@ -15,7 +15,8 @@ const categoryAbbrReverse = {
   3: 'sids',
   4: 'videomap'
 };
-const includePositions = false;
+const includePositions = true;
+
 
 function encBase64(str) {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -33,64 +34,77 @@ function decompress(str) {
 }
 
 /**
- * Transforms dictionary into custom encoded string
- * ex: 
- * 
+ * Transforms dictionary into custom encoded string, then is base64'ed.
+ * ex: tracon::ABE;1:ABE-D||enroute::AREA-A;1:N56
+ *                          
  * @param {*} layersNested 
  * @returns 
  */
+function encodeLayers(domainData) {
+  const domainStrings = [];
 
-function encodeLayers(data) {
-  const airportStrings = [];
+  Object.entries(domainData).forEach(([station, data]) => {
+    const airportStrings = [];
 
-  Object.entries(data).forEach(([airport, categories]) => {
-    const catStrings = [];
+    Object.entries(data).forEach(([airport, categories]) => {
+      const catStrings = [];
 
-    for (const cat in categories) {
-      const abbr = categoryAbbr[cat];
-      if (!abbr) continue;
+      for (const cat in categories) {
+        const abbr = categoryAbbr[cat];
+        if (!abbr) continue;
 
-      const layers = categories[cat];
-      if (!layers) continue;
+        const layers = categories[cat];
+        if (!layers) continue;
 
-      if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
-        const sectorStrings = [];
+        if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
+          const sectorStrings = [];
 
-        Object.entries(layers).forEach(([filename, positions]) => {
-          if (!positions || positions.length === 0) {
-            if (!includePositions) {
+          Object.entries(layers).forEach(([filename, positions]) => {
+            // For enroute, only encode the filename if any positions are active
+            if (station === 'enroute') {
+              if (positions && positions.length > 0) {
+                sectorStrings.push(filename);
+              }
+              return;
+            }
+
+            if (!positions || positions.length === 0) {
+              if (!includePositions) {
+                sectorStrings.push(filename);
+              }
+              return;
+            }
+
+            if (includePositions) {
+              const suffixes = positions.map(p => p.slice(-1)).join(',');
+              sectorStrings.push(`${filename}-${suffixes}`);
+            } else {
               sectorStrings.push(filename);
             }
-            return;
-          }
+          });
 
-          if (includePositions) {
-            // Detect shared prefix (1 or 2 characters)
-            const prefix = positions[0].slice(0, 2);
-            const suffixes = positions.map(p => p.slice(prefix.length)).join(',');
-            sectorStrings.push(`${filename}.${prefix}:${suffixes}`);
-          } else {
-            sectorStrings.push(filename);
+          if (sectorStrings.length > 0) {
+            catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
           }
-        });
-
-        if (sectorStrings.length > 0) {
-          catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
-        }
-      } else if (Array.isArray(layers)) {
-        if (layers.length > 0) {
-          catStrings.push(`${abbr}:${layers.join(',')}`);
+        } else if (Array.isArray(layers)) {
+          if (layers.length > 0) {
+            catStrings.push(`${abbr}:${layers.join(',')}`);
+          }
         }
       }
-    }
 
-    if (catStrings.length === 0) return;
-    airportStrings.push(`${airport};${catStrings.join(';')}`);
+      if (catStrings.length === 0) return;
+      airportStrings.push(`${airport};${catStrings.join(';')}`);
+    });
+
+    if (airportStrings.length === 0) return;
+    domainStrings.push(`${station}::${airportStrings.join('|')}`);
   });
 
-  const compactStr = airportStrings.join('|');
+  const compactStr = domainStrings.join('||');
   return encBase64(compactStr);
 }
+
 
 /**
  * Decode string into readable dictionary
@@ -98,63 +112,80 @@ function encodeLayers(data) {
  * @param {*} param 
  * @returns 
  */
-function decodeLayers(encoded) {
+function decodeLayers(encoded, GEOLAYERS) {
   if (!encoded) return {};
-
+  console.log("url sees: ", encoded)
   try {
     const decoded = decBase64(encoded);
-    const airportsArr = decoded.split('|');
+    const domainParts = decoded.split('||');
     const result = {};
 
-    airportsArr.forEach(airportStr => {
-      const parts = airportStr.split(';');
-      const airport = parts[0];
-      if (!airport) return;
+    domainParts.forEach(domainPart => {
+      const [station, airportsRaw] = domainPart.split('::');
+      if (!station || !airportsRaw) return;
 
-      result[airport] = {};
+      result[station] = {};
 
-      parts.slice(1).forEach(catPart => {
-        const [catAbbr, ...layerParts] = catPart.split(':');
-        const layerStr = layerParts.join(':'); // In case there are extra colons
-        if (!catAbbr || !layerStr) return;
+      const airportsArr = airportsRaw.split('|');
+      airportsArr.forEach(airportStr => {
+        const parts = airportStr.split(';');
+        const airport = parts[0];
+        if (!airport) return;
 
-        const cat = categoryAbbrReverse[catAbbr];
-        if (!cat) return;
+        result[station][airport] = {};
 
-        if (cat === 'sectors') {
-          const sectorObj = {};
-          const entries = layerStr.split('|'); // e.g., JFK_4s.N2:M,E,K
+        parts.slice(1).forEach(catPart => {
+          const [catAbbr, ...layerParts] = catPart.split(':');
+          const layerStr = layerParts.join(':');
+          if (!catAbbr || !layerStr) return;
 
-          entries.forEach(entry => {
-            const [filename, rest] = entry.split('.');
-            if (!rest) {
-              sectorObj[filename] = [];
+          const cat = categoryAbbrReverse[catAbbr];
+          if (!cat) return;
+
+          if (cat === 'sectors') {
+            if (station === 'enroute') {
+              // ENROUTE: just an array of filenames
+              const filenames = layerStr.split('|').filter(Boolean);
+              if (filenames.length > 0) {
+                result[station][airport][cat] = filenames;
+              }
               return;
             }
+            const sectorObj = {};
+            const entries = layerStr.split('|');
 
-            const colonIndex = rest.indexOf(':');
-            if (colonIndex !== -1) {
-              const prefix = rest.slice(0, colonIndex);
-              const suffixes = rest.slice(colonIndex + 1).split(',').filter(Boolean);
-              const positions = suffixes.map(suffix => prefix + suffix);
-              sectorObj[filename] = positions;
-            } else {
-              // No compression used
-              sectorObj[filename] = rest.split(',').filter(Boolean);
+            entries.forEach(entry => {
+              // For enroute, entry is just the filename
+              if (station === 'enroute') {
+                const filename = entry;
+                if (!filename) return;
+                const allPositions = Object.keys(
+                  GEOLAYERS?.[station]?.[airport]?.[cat]?.[filename] || {}
+                );
+                sectorObj[filename] = allPositions;
+                return;
+              }
+
+              // tracon: filename-suffixes
+              const [filename, suffixStr] = entry.split('-');
+              if (!filename) return;
+
+              if (!suffixStr) {
+                sectorObj[filename] = [];
+              } else {
+                const suffixes = suffixStr.split(',').filter(Boolean);
+                sectorObj[filename] = suffixes;
+              }
+            });
+
+            if (Object.keys(sectorObj).length > 0) {
+              result[station][airport][cat] = sectorObj;
             }
-          });
-
-          if (Object.keys(sectorObj).length > 0) {
-            result[airport][cat] = sectorObj;
           }
-        } else {
-          const layers = layerStr.split(',').filter(Boolean);
-          if (layers.length) {
-            result[airport][cat] = layers;
-          }
-        }
+        });
       });
     });
+      console.log("url out: ", result)
     return result;
   } catch (err) {
     console.error('URL Decode error:', err);
@@ -167,13 +198,13 @@ function decodeLayers(encoded) {
  * 
  * @returns 
  */
-function getEnabledLayersFromURL() {
+function getEnabledLayersFromURL(GEOLAYERS) {
   const params = new URLSearchParams(window.location.search);
   const layerParam = params.get("l");
 
   if (!layerParam) return {};
 
-  return decodeLayers(layerParam);
+  return decodeLayers(layerParam, GEOLAYERS);
 }
 
 /**

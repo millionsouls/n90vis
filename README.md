@@ -124,3 +124,5 @@ Recommend to use the same color for both, and will use the same color if only on
 
 ### Notes
 Notes for `Procedures` and `Sectors` will appears on the top right of the cursor.
+
+Contact kevinw@nyartcc.org for questions/comments/concerns/inquiries.

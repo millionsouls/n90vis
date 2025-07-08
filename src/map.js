@@ -12,21 +12,22 @@ const CONFIG = {
   zoom: 7.5,
   minZoom: 5,
   maxZoom: 18,
+  maxZoom: 18,
   bounds: [
-    [20, -140],
-    [50, -60]
+    [20, -100],
+    [50, -10]
   ],
 }
 const baseLayers = {
   "Standard": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }),
-  "Hot": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
+  "Satellite": L.esri.tiledMapLayer({
+    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
   }),
   "Dark": L.esri.tiledMapLayer({
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
-  })
+  }),
 };
 let currentLayer = baseLayers["Standard"]
 let basemapVisible = true
@@ -38,7 +39,7 @@ const map = L.map('map', {
   maxBounds: CONFIG.bounds,
   layers: [currentLayer],
 
-  zoomControl: false, // create our own and move to the right
+  zoomControl: false,
   scrollWheelZoom: false, // disable original zoom function
   smoothWheelZoom: true,  // enable smooth zoom 
   smoothSensitivity: 5,   // zoom speed. default is 1
@@ -53,7 +54,6 @@ setTimeout(() => {
   const mapContainer = document.querySelector('.leaflet-top.leaflet-right');
 
   if (mapContainer) {
-    // Create a wrapper div
     const wrapper = document.createElement('div');
     wrapper.className = 'leaflet-custom-topright';
     wrapper.style.display = 'flex';
@@ -64,7 +64,6 @@ setTimeout(() => {
     while (mapContainer.firstChild) {
       wrapper.appendChild(mapContainer.firstChild);
     }
-
     mapContainer.appendChild(wrapper);
   }
 }, 0);
@@ -84,40 +83,42 @@ document.getElementById('toggle-basemap').addEventListener('click', function () 
 
 // Resets all toggled map layers/features to off
 document.getElementById('reset-layers').addEventListener('click', function () {
-  Object.entries(GEOLAYERS).forEach(([airport, categoryObj]) => {
-    Object.entries(categoryObj).forEach(([category, subCategoryObj]) => {
-      Object.entries(subCategoryObj).forEach(([name, layerOrDict]) => {
-        const mainId = `toggle-${airport}${category}${name}`;
-        const mainCheckbox = document.getElementById(mainId);
+  Object.entries(GEOLAYERS).forEach(([station, airports]) => {
+    Object.entries(airports).forEach(([airport, categoryObj]) => {
+      Object.entries(categoryObj).forEach(([category, subCategoryObj]) => {
+        Object.entries(subCategoryObj).forEach(([name, layerOrDict]) => {
+          const mainId = `toggle-${airport}${category}${name}`;
+          const mainCheckbox = document.getElementById(mainId);
 
-        // Remove the rightbar container for this file
-        const fileContainer = document.getElementById(`rightbar-file-${airport}-${name}`);
-        if (fileContainer) fileContainer.remove();
+          // Remove the rightbar container for this file
+          const fileContainer = document.getElementById(`rightbar-file-${airport}-${name}`);
+          if (fileContainer) fileContainer.remove();
 
-        // Handle standard Layer or LayerGroup
-        if (layerOrDict instanceof L.Layer || layerOrDict instanceof L.LayerGroup) {
-          if (map.hasLayer(layerOrDict)) {
-            map.removeLayer(layerOrDict);
-          }
-        }
-        // Handle sector with positions
-        else if (typeof layerOrDict === 'object') {
-          Object.entries(layerOrDict).forEach(([positionName, layer]) => {
-            if (map.hasLayer(layer)) {
-              map.removeLayer(layer);
+          // Handle standard Layer or LayerGroup
+          if (layerOrDict instanceof L.Layer || layerOrDict instanceof L.LayerGroup) {
+            if (map.hasLayer(layerOrDict)) {
+              map.removeLayer(layerOrDict);
             }
+          }
+          // Handle sector with positions
+          else if (typeof layerOrDict === 'object') {
+            Object.entries(layerOrDict).forEach(([positionName, layer]) => {
+              if (map.hasLayer(layer)) {
+                map.removeLayer(layer);
+              }
 
-            // Reset individual position checkbox
-            const posId = `toggle-${airport}${category}${name}${positionName}`;
-            const posCheckbox = document.getElementById(posId);
-            if (posCheckbox) posCheckbox.checked = false;
-          });
-        }
+              // Reset individual position checkbox
+              const posId = `toggle-${airport}${category}${name}${positionName}`;
+              const posCheckbox = document.getElementById(posId);
+              if (posCheckbox) posCheckbox.checked = false;
+            });
+          }
 
-        // Reset main file checkbox
-        if (mainCheckbox) {
-          mainCheckbox.checked = false;
-        }
+          // Reset main file checkbox
+          if (mainCheckbox) {
+            mainCheckbox.checked = false;
+          }
+        });
       });
     });
   });
@@ -129,6 +130,7 @@ document.getElementById('reset-layers').addEventListener('click', function () {
   updateURLFromMapState();
 });
 
+// Toggles visibility of procedure markers (label only)
 document.getElementById('toggle-markers').addEventListener('click', function () {
   const icons = document.querySelectorAll('.procedure-label');
   let anyVisible = Array.from(icons).some(el => el.style.display !== 'none');

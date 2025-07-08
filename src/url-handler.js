@@ -15,7 +15,7 @@ const categoryAbbrReverse = {
   3: 'sids',
   4: 'videomap'
 };
-const includePositions = false;
+const includePositions = true;
 
 function encBase64(str) {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -40,57 +40,63 @@ function decompress(str) {
  * @returns 
  */
 
-function encodeLayers(data) {
-  const airportStrings = [];
+function encodeLayers(domainData) {
+  const domainStrings = [];
 
-  Object.entries(data).forEach(([airport, categories]) => {
-    const catStrings = [];
+  Object.entries(domainData).forEach(([domain, data]) => {
+    const airportStrings = [];
 
-    for (const cat in categories) {
-      const abbr = categoryAbbr[cat];
-      if (!abbr) continue;
+    Object.entries(data).forEach(([airport, categories]) => {
+      const catStrings = [];
 
-      const layers = categories[cat];
-      if (!layers) continue;
+      for (const cat in categories) {
+        const abbr = categoryAbbr[cat];
+        if (!abbr) continue;
 
-      if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
-        const sectorStrings = [];
+        const layers = categories[cat];
+        if (!layers) continue;
 
-        Object.entries(layers).forEach(([filename, positions]) => {
-          if (!positions || positions.length === 0) {
-            if (!includePositions) {
+        if (cat === 'sectors' && typeof layers === 'object' && !Array.isArray(layers)) {
+          const sectorStrings = [];
+
+          Object.entries(layers).forEach(([filename, positions]) => {
+            if (!positions || positions.length === 0) {
+              if (!includePositions) {
+                sectorStrings.push(filename);
+              }
+              return;
+            }
+
+            if (includePositions) {
+              const suffixes = positions.map(p => p.slice(-1)).join(',');
+              sectorStrings.push(`${filename}-${suffixes}`);
+            } else {
               sectorStrings.push(filename);
             }
-            return;
-          }
+          });
 
-          if (includePositions) {
-            // Detect shared prefix (1 or 2 characters)
-            const prefix = positions[0].slice(0, 2);
-            const suffixes = positions.map(p => p.slice(prefix.length)).join(',');
-            sectorStrings.push(`${filename}.${prefix}:${suffixes}`);
-          } else {
-            sectorStrings.push(filename);
+          if (sectorStrings.length > 0) {
+            catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
           }
-        });
-
-        if (sectorStrings.length > 0) {
-          catStrings.push(`${abbr}:${sectorStrings.join('|')}`);
-        }
-      } else if (Array.isArray(layers)) {
-        if (layers.length > 0) {
-          catStrings.push(`${abbr}:${layers.join(',')}`);
+        } else if (Array.isArray(layers)) {
+          if (layers.length > 0) {
+            catStrings.push(`${abbr}:${layers.join(',')}`);
+          }
         }
       }
-    }
 
-    if (catStrings.length === 0) return;
-    airportStrings.push(`${airport};${catStrings.join(';')}`);
+      if (catStrings.length === 0) return;
+      airportStrings.push(`${airport};${catStrings.join(';')}`);
+    });
+
+    if (airportStrings.length === 0) return;
+    domainStrings.push(`${domain}::${airportStrings.join('|')}`);
   });
 
-  const compactStr = airportStrings.join('|');
+  const compactStr = domainStrings.join('||');
   return encBase64(compactStr);
 }
+
 
 /**
  * Decode string into readable dictionary
@@ -98,61 +104,66 @@ function encodeLayers(data) {
  * @param {*} param 
  * @returns 
  */
-function decodeLayers(encoded) {
+function decodeLayers(encoded, GEOLAYERS) {
   if (!encoded) return {};
 
   try {
     const decoded = decBase64(encoded);
-    const airportsArr = decoded.split('|');
+    const domainParts = decoded.split('||');
     const result = {};
 
-    airportsArr.forEach(airportStr => {
-      const parts = airportStr.split(';');
-      const airport = parts[0];
-      if (!airport) return;
+    domainParts.forEach(domainPart => {
+      const [domain, airportsRaw] = domainPart.split('::');
+      if (!domain || !airportsRaw) return;
 
-      result[airport] = {};
+      result[domain] = {};
 
-      parts.slice(1).forEach(catPart => {
-        const [catAbbr, ...layerParts] = catPart.split(':');
-        const layerStr = layerParts.join(':'); // In case there are extra colons
-        if (!catAbbr || !layerStr) return;
+      const airportsArr = airportsRaw.split('|');
+      airportsArr.forEach(airportStr => {
+        const parts = airportStr.split(';');
+        const airport = parts[0];
+        if (!airport) return;
 
-        const cat = categoryAbbrReverse[catAbbr];
-        if (!cat) return;
+        result[domain][airport] = {};
 
-        if (cat === 'sectors') {
-          const sectorObj = {};
-          const entries = layerStr.split('|'); // e.g., JFK_4s.N2:M,E,K
+        parts.slice(1).forEach(catPart => {
+          const [catAbbr, ...layerParts] = catPart.split(':');
+          const layerStr = layerParts.join(':');
+          if (!catAbbr || !layerStr) return;
 
-          entries.forEach(entry => {
-            const [filename, rest] = entry.split('.');
-            if (!rest) {
-              sectorObj[filename] = [];
-              return;
+          const cat = categoryAbbrReverse[catAbbr];
+          if (!cat) return;
+
+          if (cat === 'sectors') {
+            const sectorObj = {};
+            const entries = layerStr.split('|');
+
+            entries.forEach(entry => {
+              const [filename, suffixStr] = entry.split('-');
+              if (!filename) return;
+
+              const allPositions = Object.keys(
+                GEOLAYERS?.[domain]?.[airport]?.[cat]?.[filename] || {}
+              );
+
+              if (!suffixStr) {
+                // If no suffix provided, assume activate all positions
+                sectorObj[filename] = allPositions;
+              } else {
+                const suffixes = suffixStr.split(',').filter(Boolean);
+                const matched = allPositions.filter(pos =>
+                  suffixes.includes(pos.slice(-1))
+                );
+
+                sectorObj[filename] = matched;
+              }
+            });
+
+            if (Object.keys(sectorObj).length > 0) {
+              result[domain][airport][cat] = sectorObj;
             }
-
-            const colonIndex = rest.indexOf(':');
-            if (colonIndex !== -1) {
-              const prefix = rest.slice(0, colonIndex);
-              const suffixes = rest.slice(colonIndex + 1).split(',').filter(Boolean);
-              const positions = suffixes.map(suffix => prefix + suffix);
-              sectorObj[filename] = positions;
-            } else {
-              // No compression used
-              sectorObj[filename] = rest.split(',').filter(Boolean);
-            }
-          });
-
-          if (Object.keys(sectorObj).length > 0) {
-            result[airport][cat] = sectorObj;
           }
-        } else {
-          const layers = layerStr.split(',').filter(Boolean);
-          if (layers.length) {
-            result[airport][cat] = layers;
-          }
-        }
+        });
       });
     });
     return result;
@@ -167,13 +178,13 @@ function decodeLayers(encoded) {
  * 
  * @returns 
  */
-function getEnabledLayersFromURL() {
+function getEnabledLayersFromURL(GEOLAYERS) {
   const params = new URLSearchParams(window.location.search);
   const layerParam = params.get("l");
 
   if (!layerParam) return {};
 
-  return decodeLayers(layerParam);
+  return decodeLayers(layerParam, GEOLAYERS);
 }
 
 /**

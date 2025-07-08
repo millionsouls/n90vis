@@ -13,8 +13,8 @@ const CONFIG = {
   minZoom: 5,
   maxZoom: 18,
   bounds: [
-    [20, -140],
-    [50, -60]
+    [20, -100],
+    [50, -10]
   ],
 }
 const baseLayers = {

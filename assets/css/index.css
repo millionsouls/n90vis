@@ -6,19 +6,24 @@
   height: 100vh;
   z-index: 0;
 }
+
 .leaflet-container.hovering-feature {
   cursor: crosshair !important;
 }
+
 .leaflet-interactive {
   cursor: crosshair !important;
 }
+
 .leaflet-custom-topright .leaflet-control {
   margin: 5px !important;
 }
+
 .leaflet-control-zoom,
 .leaflet-control-layers {
   float: none !important;
 }
+
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
   padding: 3px;
@@ -68,26 +73,87 @@
   display: block;
 }
 
+/*Help div */
+#help-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#help-modal.hidden {
+  display: none;
+}
+#help-content {
+  background-color: #fff;
+  color: #000;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 80%;
+  position: relative;
+  font-size: 14px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+#help-content h2 {
+  margin-top: 0;
+}
+#close-help {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+}
+#close-help:hover {
+  color: #000;
+}
+
+/* Misc stuff */
 .flex-center {
-  display: flex; 
-  flex-direction: column; 
+  display: flex;
+  flex-direction: column;
   justify-content: center;
 }
-.text-center{
+
+.text-center {
   text-align: center;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
+
 body {
   display: flex;
   overflow: hidden;
 }
-body, html, #sidebar, #hover-info-box, input, label, button, select, textarea {
+
+body,
+html,
+#sidebar,
+#hover-info-box,
+input,
+label,
+button,
+select,
+textarea {
   font-family: 'Roboto', Arial, sans-serif !important;
 }
-h1, h2, h3, h4, h5, h6{
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 10px 0px;
 }

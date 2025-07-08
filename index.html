@@ -7,15 +7,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link id="jsapiStyles" rel="stylesheet" href="https://js.arcgis.com/4.33/esri/themes/dark/main.css">
 
   <link rel="stylesheet" href="assets/css/common.css" />
-  <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/index.css" />
   <link rel="stylesheet" href="assets/css/menu.css" />
   <link rel="stylesheet" href="assets/css/layerinfo.css" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
@@ -25,20 +27,22 @@
   <div id="notes-hover-box" style="display: none; position: fixed; z-index: 2000;"></div>
   <div id="sector-notes-container"></div>
 
-  
+
   <!-- Sidebar -->
-  <button id="sidebar-toggle" style="color: var(--textcolor-dark);">&#9776;</button> 
-  <button id="rightbar-toggle" style="color: var(--textcolor-dark);">&#9776;</button> 
+  <button id="sidebar-toggle" style="color: var(--textcolor-dark);">&#9776;</button>
+  <button id="rightbar-toggle" style="color: var(--textcolor-dark);">&#9776;</button>
   <div id="menu">
     <div id="information" class="flex-center">
       <h4 style="color: var(--textcolor-dark); margin-bottom:0px;">ZNY Airspace Visualizer</h4>
       <h5 style="color:red; margin-bottom:0px;">FOR FLIGHT SIMULATION PURPOSES ONLY</h5>
     </div>
+    <p style="text-align:center; margin:10px 0px 0px 0px; font-weight:200px;"></p>
     <div id="general-options" class="flex-center">
-        <button type="button" id="reset-layers">Layers</button>
-        <button type="button" id="toggle-markers">Markers</button>
-        <button type="button" id="toggle-basemap">Basemap</button>
-        <button type="button" onclick="toggleDarkMode()">Dark Mode</button>
+      <button type="button" id="reset-layers">Reset Layers</button>
+      <button type="button" id="toggle-markers">Toggle Labels</button>
+      <button type="button" id="toggle-basemap">Toggle Map</button>
+      <button type="button" onclick="toggleDarkMode()">Dark Mode</button>
+      <button type="button" id="help-button">Help</button>
     </div>
     <div id="search-section">
       <input type="text" id="search-input" placeholder="Search">
@@ -57,8 +61,9 @@
   <div id="map"></div>
 
   <!-- LOAD ORDER -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/esri-leaflet"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet@3.0.9/dist/esri-leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet-vector@4.0.2/dist/esri-leaflet-vector.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <script src="src/ui/smoothscroll.js"></script>
   <script src="src/config.js"></script>
@@ -69,7 +74,8 @@
   <script type="module" src="src/main.js"></script>
 
   <footer id="page-footer">
-    <a href="https://github.com/millionsouls/n90vis" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
+    <a href="https://github.com/millionsouls/n90vis" target="_blank" rel="noopener noreferrer"
+      title="GitHub Repository">
       <i class="fa fa-github footer-logo" aria-hidden="true"></i>
       GitHub
     </a>
@@ -79,36 +85,72 @@
       vZNY
     </a>
   </footer>
+
+  <div id="help-modal" class="hidden">
+    <div id="help-content">
+      <span id="close-help">&times;</span>
+      <h2>Welcome to the ZNY Airspace Visualizer!</h2>
+      <p>This tool is mainly meant to help visualize TRACON & Enroute airspace within ZNY ARTCC. Procedures such as SIDs/STARs may also be overlayed.</p>
+      <ul>
+        <li><b>General Options:</b></li>
+        <ul>
+          <li><b>Reset Layers:</b> Clears all layers & features from the map</li>
+          <li><b>Toggle Labels:</b> Toggles the visibility of labels on procedures</li>
+          <li><b>Toggle Map:</b> Toggles the visibility of the basemap</li>
+          <li><b>Dark Mode:</b> Does what the tin says!</li>
+        </ul>
+        <li><b>Map Layers:</b> Top left contains a selection of maps.</li>
+        <li><b>Search:</b> Search for a something. Will match to names of procedures (FQM3, JFK5), airports (JFK, EWR, LGA), configs (4s, 31s, D4L4/31), or sectors (Area A, N56)</li>
+        <li><b>Terminal / Enroute:</b> Switch between files for the TRACON or Enroute</li>
+        <li><b>Menu Bars:</b> Left side will contain options for toggling main files (sectors, procedures, videomaps). Right menu will be enabled when airspace files are selected, allowing for toggling specific positions (N2G, N2K, N4P).</li>
+        <li><b>URL Linking:</b> Any changes to features/layers on the map will generate a unqiue URL that can be reloaded to an exact configuration. For TRACON sector files, specific position configs are also included but not for ENROUTE files.</li>
+      </ul>
+      <p style="color:red;">Not for real world navigation. This site is in no way affiliated with the FAA, New York TRACON or New York ARTCC, and no information found on this site should ever be used for real world flight planning, operation, air traffic control or air traffic management</p>
+    </div>
+  </div>
 </body>
 
 <script>
-    const sidebarToggle = document.getElementById('sidebar-toggle')
-    const rightbarToggle = document.getElementById('rightbar-toggle')
-    const sidebar = document.getElementById('menu')
-    const rightbar = document.getElementById('rightbar')
+  // General options handlers
+  const sidebarToggle = document.getElementById('sidebar-toggle')
+  const rightbarToggle = document.getElementById('rightbar-toggle')
+  const sidebar = document.getElementById('menu')
+  const rightbar = document.getElementById('rightbar')
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    sidebarToggle.style.left = sidebar.classList.contains('collapsed') ? 'calc(var(--menuoffset-left) + 10px)' : 'calc(var(--menuwidth) + var(--menuoffset-left) + 10px)';
+  });
+  rightbarToggle.addEventListener('click', () => {
+    rightbar.classList.toggle('collapsed');
+    rightbarToggle.style.right = rightbar.classList.contains('collapsed') ? '10px' : '165px';
+  });
+  document.addEventListener("click", function (e) {
+    const searchBox = document.getElementById("search-input");
+    const resultsBox = document.getElementById("search-results");
 
-    sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-      sidebarToggle.style.left = sidebar.classList.contains('collapsed') ? 'calc(var(--menuoffset-left) + 10px)' : 'calc(var(--menuwidth) + var(--menuoffset-left) + 10px)';
-    });
-    rightbarToggle.addEventListener('click', () => {
-      rightbar.classList.toggle('collapsed');
-      rightbarToggle.style.right = rightbar.classList.contains('collapsed') ? '10px' : '165px';
-    });
+    const clickedInside = searchBox.contains(e.target) || resultsBox.contains(e.target);
 
-    document.addEventListener("click", function (e) {
-      const searchBox = document.getElementById("search-input");
-      const resultsBox = document.getElementById("search-results");
-
-      const clickedInside = searchBox.contains(e.target) || resultsBox.contains(e.target);
-
-      if (!clickedInside) {
-        resultsBox.style.display = "none";
-      }
-    });
-
-    function toggleDarkMode() {
-      document.documentElement.classList.toggle('dark-mode');
+    if (!clickedInside) {
+      resultsBox.style.display = "none";
     }
+  });
+  function toggleDarkMode() {
+    document.documentElement.classList.toggle('dark-mode');
+  }
+
+  // Help div scripts
+  const helpBtn = document.getElementById('help-button');
+  const helpModal = document.getElementById('help-modal');
+  const closeHelp = document.getElementById('close-help');
+  helpBtn.addEventListener('click', () => {
+    helpModal.classList.remove('hidden');
+  });
+  closeHelp.addEventListener('click', () => {
+    helpModal.classList.add('hidden');
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') helpModal.classList.add('hidden');
+  });
 </script>
+
 </html>

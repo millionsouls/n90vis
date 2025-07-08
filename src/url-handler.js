@@ -17,6 +17,7 @@ const categoryAbbrReverse = {
 };
 const includePositions = true;
 
+
 function encBase64(str) {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -33,17 +34,16 @@ function decompress(str) {
 }
 
 /**
- * Transforms dictionary into custom encoded string
- * ex: 
- * 
+ * Transforms dictionary into custom encoded string, then is base64'ed.
+ * ex: tracon::ABE;1:ABE-D||enroute::AREA-A;1:N56
+ *                          
  * @param {*} layersNested 
  * @returns 
  */
-
 function encodeLayers(domainData) {
   const domainStrings = [];
 
-  Object.entries(domainData).forEach(([domain, data]) => {
+  Object.entries(domainData).forEach(([station, data]) => {
     const airportStrings = [];
 
     Object.entries(data).forEach(([airport, categories]) => {
@@ -61,7 +61,7 @@ function encodeLayers(domainData) {
 
           Object.entries(layers).forEach(([filename, positions]) => {
             // For enroute, only encode the filename if any positions are active
-            if (domain === 'enroute') {
+            if (station === 'enroute') {
               if (positions && positions.length > 0) {
                 sectorStrings.push(filename);
               }
@@ -98,7 +98,7 @@ function encodeLayers(domainData) {
     });
 
     if (airportStrings.length === 0) return;
-    domainStrings.push(`${domain}::${airportStrings.join('|')}`);
+    domainStrings.push(`${station}::${airportStrings.join('|')}`);
   });
 
   const compactStr = domainStrings.join('||');
@@ -114,17 +114,17 @@ function encodeLayers(domainData) {
  */
 function decodeLayers(encoded, GEOLAYERS) {
   if (!encoded) return {};
-
+  console.log("url sees: ", encoded)
   try {
     const decoded = decBase64(encoded);
     const domainParts = decoded.split('||');
     const result = {};
 
     domainParts.forEach(domainPart => {
-      const [domain, airportsRaw] = domainPart.split('::');
-      if (!domain || !airportsRaw) return;
+      const [station, airportsRaw] = domainPart.split('::');
+      if (!station || !airportsRaw) return;
 
-      result[domain] = {};
+      result[station] = {};
 
       const airportsArr = airportsRaw.split('|');
       airportsArr.forEach(airportStr => {
@@ -132,7 +132,7 @@ function decodeLayers(encoded, GEOLAYERS) {
         const airport = parts[0];
         if (!airport) return;
 
-        result[domain][airport] = {};
+        result[station][airport] = {};
 
         parts.slice(1).forEach(catPart => {
           const [catAbbr, ...layerParts] = catPart.split(':');
@@ -143,11 +143,11 @@ function decodeLayers(encoded, GEOLAYERS) {
           if (!cat) return;
 
           if (cat === 'sectors') {
-            if (domain === 'enroute') {
+            if (station === 'enroute') {
               // ENROUTE: just an array of filenames
               const filenames = layerStr.split('|').filter(Boolean);
               if (filenames.length > 0) {
-                result[domain][airport][cat] = filenames;
+                result[station][airport][cat] = filenames;
               }
               return;
             }
@@ -156,11 +156,11 @@ function decodeLayers(encoded, GEOLAYERS) {
 
             entries.forEach(entry => {
               // For enroute, entry is just the filename
-              if (domain === 'enroute') {
+              if (station === 'enroute') {
                 const filename = entry;
                 if (!filename) return;
                 const allPositions = Object.keys(
-                  GEOLAYERS?.[domain]?.[airport]?.[cat]?.[filename] || {}
+                  GEOLAYERS?.[station]?.[airport]?.[cat]?.[filename] || {}
                 );
                 sectorObj[filename] = allPositions;
                 return;
@@ -170,30 +170,22 @@ function decodeLayers(encoded, GEOLAYERS) {
               const [filename, suffixStr] = entry.split('-');
               if (!filename) return;
 
-              const allPositions = Object.keys(
-                GEOLAYERS?.[domain]?.[airport]?.[cat]?.[filename] || {}
-              );
-
               if (!suffixStr) {
-                // If no suffix provided, assume activate all positions
-                sectorObj[filename] = allPositions;
+                sectorObj[filename] = [];
               } else {
                 const suffixes = suffixStr.split(',').filter(Boolean);
-                const matched = allPositions.filter(pos =>
-                  suffixes.includes(pos.slice(-1))
-                );
-
-                sectorObj[filename] = matched;
+                sectorObj[filename] = suffixes;
               }
             });
 
             if (Object.keys(sectorObj).length > 0) {
-              result[domain][airport][cat] = sectorObj;
+              result[station][airport][cat] = sectorObj;
             }
           }
         });
       });
     });
+      console.log("url out: ", result)
     return result;
   } catch (err) {
     console.error('URL Decode error:', err);

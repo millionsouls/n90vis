@@ -9,6 +9,13 @@ const GEODATA = { tracon: {}, enroute: {} };
 const GEOLAYERS = { tracon: {}, enroute: {} };
 const fetchPromises = [];
 
+/**
+ * Create map if does not exist
+ * 
+ * @param {*} map 
+ * @param {*} paneName 
+ * @param {*} zIndex 
+ */
 function ensurePane(map, paneName, zIndex) {
   if (!map.getPane(paneName)) {
     map.createPane(paneName);
@@ -16,6 +23,12 @@ function ensurePane(map, paneName, zIndex) {
   }
 }
 
+/**
+ * Guess what the file is: sector/pd/vm, used for single file facilties or those with less files that do not need extra folder dirs
+ * 
+ * @param {*} data 
+ * @returns 
+ */
 function inferCategory(data) {
   const props = data.features[0]?.properties || {};
   if ('Position' in props) return 'sectors';
@@ -26,6 +39,14 @@ function inferCategory(data) {
   return null;
 }
 
+/**
+ * Load and construct layers for procedures: star/sid. Build the markers and labels.
+ * 
+ * @param {*} map 
+ * @param {*} data 
+ * @param {*} fmtName 
+ * @returns 
+ */
 function loadPD(map, data, fmtName) {
   const linePane = `pane-lines-${fmtName}`;
   const markerPane = `pane-markers-${fmtName}`;
@@ -69,6 +90,14 @@ function loadPD(map, data, fmtName) {
   return L.layerGroup([L.layerGroup(lines), L.layerGroup(markers)]);
 }
 
+/**
+ * Load a videomap, nothing special is done with these
+ * 
+ * @param {*} map 
+ * @param {*} data 
+ * @param {*} fmtName 
+ * @returns 
+ */
 function loadVM(map, data, fmtName) {
   return L.geoJSON(data, {
     style: feature => feature.geometry.type === "LineString" ? { color: "#000", weight: 1 } : {},
@@ -76,6 +105,16 @@ function loadVM(map, data, fmtName) {
   });
 }
 
+/**
+ * Load in sector files (airspace). 
+ * 
+ * @param {*} map 
+ * @param {*} data 
+ * @param {*} upperKey 
+ * @param {*} category 
+ * @param {*} name 
+ * @returns 
+ */
 function loadSector(map, data, upperKey, category, name) {
   const zIndex = data.features[0]?.properties?.style?.zIndex || 0;
   const featureGroups = {};
@@ -106,9 +145,19 @@ function loadSector(map, data, upperKey, category, name) {
   return positionGroups;
 }
 
-function storeMetadata(domain, airport, category, name, group, isArray = false) {
-  const layers = GEOLAYERS[domain];
-  const data = GEODATA[domain];
+/**
+ * Create directories and paths for all layers that are generated
+ * 
+ * @param {*} station 
+ * @param {*} airport 
+ * @param {*} category 
+ * @param {*} name 
+ * @param {*} group 
+ * @param {*} isArray 
+ */
+function storeMetadata(station, airport, category, name, group, isArray = false) {
+  const layers = GEOLAYERS[station];
+  const data = GEODATA[station];
 
   layers[airport] ??= {};
   layers[airport][category] ??= {};
@@ -123,13 +172,20 @@ function storeMetadata(domain, airport, category, name, group, isArray = false) 
   }
 }
 
+/**
+ * Start point, loops through the file-index.json and loads it. Create promises to ensure files are loaded before anything else is done.
+ * 
+ * @param {*} GEOFILES 
+ * @param {*} map 
+ * @returns 
+ */
 function loadGeoFiles(GEOFILES, map) {
-  Object.entries(GEOFILES).forEach(([domain, domainFiles]) => {
+  Object.entries(GEOFILES).forEach(([station, domainFiles]) => {
     Object.entries(domainFiles).forEach(([airport, fileArray]) => {
       const upperKey = airport.toUpperCase();
 
       fileArray.forEach(file => {
-        const fetchPromise = fetch(`data/${domain}/${airport}/${file}`)
+        const fetchPromise = fetch(`data/${station}/${airport}/${file}`)
           .then(res => res.json())
           .then(data => {
             if (!data?.features) throw new Error("Missing features");
@@ -146,13 +202,13 @@ function loadGeoFiles(GEOFILES, map) {
             let group;
             if (category === "stars" || category === "sids") {
               group = loadPD(map, data, fmtName);
-              storeMetadata(domain, upperKey, category, name, group, true);
+              storeMetadata(station, upperKey, category, name, group, true);
             } else if (category === "videomap") {
               group = loadVM(map, data, fmtName);
-              storeMetadata(domain, upperKey, category, name, group, true);
+              storeMetadata(station, upperKey, category, name, group, true);
             } else {
               group = loadSector(map, data, upperKey, category, name);
-              storeMetadata(domain, upperKey, category, name, group, false);
+              storeMetadata(station, upperKey, category, name, group, false);
             }
           })
           .catch(err => console.error(`Failed to load ${file}:`, err));

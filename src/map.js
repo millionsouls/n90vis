@@ -21,12 +21,12 @@ const baseLayers = {
   "Standard": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }),
-  "Hot": L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team'
+  "Satellite": L.esri.tiledMapLayer({
+    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer'
   }),
   "Dark": L.esri.tiledMapLayer({
     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
-  })
+  }),
 };
 let currentLayer = baseLayers["Standard"]
 let basemapVisible = true
@@ -38,7 +38,7 @@ const map = L.map('map', {
   maxBounds: CONFIG.bounds,
   layers: [currentLayer],
 
-  zoomControl: false, // create our own and move to the right
+  zoomControl: false,
   scrollWheelZoom: false, // disable original zoom function
   smoothWheelZoom: true,  // enable smooth zoom 
   smoothSensitivity: 5,   // zoom speed. default is 1
@@ -53,7 +53,6 @@ setTimeout(() => {
   const mapContainer = document.querySelector('.leaflet-top.leaflet-right');
 
   if (mapContainer) {
-    // Create a wrapper div
     const wrapper = document.createElement('div');
     wrapper.className = 'leaflet-custom-topright';
     wrapper.style.display = 'flex';
@@ -64,7 +63,6 @@ setTimeout(() => {
     while (mapContainer.firstChild) {
       wrapper.appendChild(mapContainer.firstChild);
     }
-
     mapContainer.appendChild(wrapper);
   }
 }, 0);
@@ -84,7 +82,7 @@ document.getElementById('toggle-basemap').addEventListener('click', function () 
 
 // Resets all toggled map layers/features to off
 document.getElementById('reset-layers').addEventListener('click', function () {
-  Object.entries(GEOLAYERS).forEach(([domain, airports]) => {
+  Object.entries(GEOLAYERS).forEach(([station, airports]) => {
     Object.entries(airports).forEach(([airport, categoryObj]) => {
       Object.entries(categoryObj).forEach(([category, subCategoryObj]) => {
         Object.entries(subCategoryObj).forEach(([name, layerOrDict]) => {
@@ -131,6 +129,7 @@ document.getElementById('reset-layers').addEventListener('click', function () {
   updateURLFromMapState();
 });
 
+// Toggles visibility of procedure markers (label only)
 document.getElementById('toggle-markers').addEventListener('click', function () {
   const icons = document.querySelectorAll('.procedure-label');
   let anyVisible = Array.from(icons).some(el => el.style.display !== 'none');

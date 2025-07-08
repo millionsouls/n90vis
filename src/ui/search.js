@@ -16,49 +16,52 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
   // Position results container next to search input
   const rect = searchInput.getBoundingClientRect();
-  resultsContainer.style.top = `${rect.top - searchInput.offsetHeight}px`;
+  resultsContainer.style.top = `${rect.top - searchInput.offsetHeight + 8}px`;
   resultsContainer.style.left = `${rect.left + searchInput.offsetWidth - 2}px`;
 
   // Hide results on outside click
   document.body.addEventListener("click", (e) => {
     if (!e.target.closest("#search-results") && e.target !== searchInput) {
-      resultsContainer.style.display = "none"
+      resultsContainer.style.display = "none";
     }
   });
 
   searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase()
-    resultsContainer.innerHTML = ""
+    const query = searchInput.value.trim().toLowerCase();
+    resultsContainer.innerHTML = "";
 
     if (!query) {
-      resultsContainer.style.display = "none"
+      resultsContainer.style.display = "none";
       return;
     }
 
-    const keywords = query.split(/\s+/).filter(k => k.trim() !== "").map(k => k.toLowerCase());
+    const keywords = query.split(/\s+/).filter(k => k).map(k => k.toLowerCase());
     const matches = [];
 
-    Object.entries(GEODATA).forEach(([airport, categories]) => {
-      Object.entries(categories).forEach(([category, data]) => {
-        if (category === 'sectors' && typeof data === 'object' && !Array.isArray(data)) {
-          // Handle nested sector structure
-          Object.keys(data).forEach(filename => {
-            const combined = `[${airport}] ${filename}`.toLowerCase();
-            const allMatch = keywords.every(kw => combined.includes(kw));
-            if (allMatch) {
-              matches.push({ airport, category, name: filename });
-            }
-          });
-        } else if (Array.isArray(data)) {
-          // Handle flat array structure (stars, sids, videomap)
-          data.forEach(name => {
-            const combined = `[${airport}] ${name}`.toLowerCase();
-            const allMatch = keywords.every(kw => combined.includes(kw));
-            if (allMatch) {
-              matches.push({ airport, category, name });
-            }
-          });
-        }
+    ['tracon', 'enroute'].forEach(domain => {
+      const domainData = GEODATA[domain];
+      const domainLayers = GEOLAYERS[domain];
+
+      Object.entries(domainData).forEach(([airport, categories]) => {
+        Object.entries(categories).forEach(([category, data]) => {
+          if (category === 'sectors' && typeof data === 'object' && !Array.isArray(data)) {
+            Object.keys(data).forEach(filename => {
+              const combined = `[${domain}] [${airport}] ${filename}`.toLowerCase();
+              const allMatch = keywords.every(kw => combined.includes(kw));
+              if (allMatch) {
+                matches.push({ domain, airport, category, name: filename });
+              }
+            });
+          } else if (Array.isArray(data)) {
+            data.forEach(name => {
+              const combined = `[${domain}] [${airport}] ${name}`.toLowerCase();
+              const allMatch = keywords.every(kw => combined.includes(kw));
+              if (allMatch) {
+                matches.push({ domain, airport, category, name });
+              }
+            });
+          }
+        });
       });
     });
 
@@ -67,9 +70,9 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
       return;
     }
 
-    matches.forEach(({ airport, category, name }) => {
+    matches.forEach(({ domain, airport, category, name }) => {
       const id = `toggle-${airport}${category}${name}`;
-      const layer = GEOLAYERS[airport]?.[category]?.[name];
+      const layer = GEOLAYERS[domain]?.[airport]?.[category]?.[name];
       const checkbox = document.getElementById(id);
 
       const wrapper = document.createElement("div");
@@ -82,28 +85,27 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
       cb.addEventListener("change", () => {
         if (!layer || !checkbox) return;
-        checkbox.checked = cb.checked;
+          checkbox.checked = cb.checked;
+          checkbox.dispatchEvent(new Event("change"));
 
-        // Add or remove layers
+
+        const handleLayer = (l, action) => {
+          if (l instanceof L.Layer || l instanceof L.LayerGroup) {
+            action === 'add' ? map.addLayer(l) : map.removeLayer(l);
+          }
+        };
+
         if (cb.checked) {
-          if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-            map.addLayer(layer);
-          } else if (typeof layer === 'object') {
-            Object.values(layer).forEach(posLayer => {
-              if (posLayer instanceof L.Layer || posLayer instanceof L.LayerGroup) {
-                map.addLayer(posLayer);
-              }
-            });
+          if (typeof layer === 'object' && !Array.isArray(layer)) {
+            Object.values(layer).forEach(l => handleLayer(l, 'add'));
+          } else {
+            handleLayer(layer, 'add');
           }
         } else {
-          if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-            map.removeLayer(layer);
-          } else if (typeof layer === 'object') {
-            Object.values(layer).forEach(posLayer => {
-              if (posLayer instanceof L.Layer || posLayer instanceof L.LayerGroup) {
-                map.removeLayer(posLayer);
-              }
-            });
+          if (typeof layer === 'object' && !Array.isArray(layer)) {
+            Object.values(layer).forEach(l => handleLayer(l, 'remove'));
+          } else {
+            handleLayer(layer, 'remove');
           }
         }
 
@@ -112,7 +114,7 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 
       const label = document.createElement("label");
       label.htmlFor = cb.id;
-      label.textContent = `[${airport.toUpperCase()}] [${category.toUpperCase()}] ${name.toUpperCase()}`;
+      label.textContent = `[${domain.toUpperCase()}] [${airport.toUpperCase()}] [${category.toUpperCase()}] ${name.toUpperCase()}`;
 
       wrapper.appendChild(cb);
       wrapper.appendChild(label);
@@ -124,3 +126,4 @@ function setupSearch(GEODATA, GEOLAYERS, map, updateURLFromMapState) {
 }
 
 export { setupSearch };
+

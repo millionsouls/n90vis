@@ -15,10 +15,22 @@ function buildCheckbox(id, label, checked = false) {
   return wrapper;
 }
 
-function buildToggle(map, positionLayers, parentId, airport, categoryLabel, name, updateURLFromMapState) {
+/**
+ * Constructs the checkboxes
+ * 
+ * @param {*} map 
+ * @param {*} positionLayers 
+ * @param {*} fileId 
+ * @param {*} airport 
+ * @param {*} categoryLabel 
+ * @param {*} name 
+ * @param {*} updateURL 
+ * @returns 
+ */
+function buildToggle(map, positionLayers, fileId, airport, categoryLabel, name, updateURL) {
   const container = document.createElement("div");
   container.className = "rightbar-file";
-  container.id = parentId;
+  container.id = fileId;
 
   const header = document.createElement("div");
   header.innerText = name;
@@ -31,10 +43,8 @@ function buildToggle(map, positionLayers, parentId, airport, categoryLabel, name
     checkboxDiv.className = "position-id-toggle";
 
     checkboxDiv.querySelector("input").addEventListener("change", function () {
-      if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-        this.checked ? map.addLayer(layer) : map.removeLayer(layer);
-        updateURLFromMapState();
-      }
+      this.checked ? map.addLayer(layer) : map.removeLayer(layer);
+      updateURL();
     });
 
     container.appendChild(checkboxDiv);
@@ -44,20 +54,21 @@ function buildToggle(map, positionLayers, parentId, airport, categoryLabel, name
 }
 
 /**
- * Builds the sidebar menu with dropdowns and toggles
+ * Construct the sidebar containing options for toggling layers. This creates options for both tracon and enroute but hides enroute initally.
  * 
- * @param {Object} GEODATA 
- * @param {Object} GEOLAYERS 
- * @param {L.Map} map
- * @param {Function} updateURLFromMapState
+ * @param {*} GEODATA 
+ * @param {*} GEOLAYERS 
+ * @param {*} map 
+ * @param {*} updateURL 
+ * @param {*} activeDomain 
  */
-function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, activeDomain = 'tracon') {
+function buildSidebar(GEODATA, GEOLAYERS, map, updateURL, activeDomain = 'tracon') {
   const sidebar = document.getElementById("sidebar");
   sidebar.innerHTML = "";
 
   ['tracon', 'enroute'].forEach(domain => {
     const domainWrapper = document.createElement("div");
-    domainWrapper.id = `sidebar-domain-${domain}`;
+    domainWrapper.id = `sidebar-station-${domain}`;
     domainWrapper.style.display = (domain === activeDomain) ? "block" : "none";
 
     Object.entries(GEODATA[domain] || {}).forEach(([airport, categories]) => {
@@ -71,23 +82,15 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, activeDoma
       const container = document.createElement("div");
       container.className = "dropdown-container";
 
-      Object.entries(categories).forEach(([categoryLabel, namesOrObject]) => {
-        let names;
-        if (categoryLabel === 'sectors' && typeof namesOrObject === 'object' && !Array.isArray(namesOrObject)) {
-          names = Object.keys(namesOrObject);
-        } else if (Array.isArray(namesOrObject)) {
-          names = namesOrObject;
-        } else {
-          return;
-        }
+      Object.entries(categories).forEach(([category, items]) => {
+        const names = (category === 'sectors' && typeof items === 'object') ? Object.keys(items) : items;
+        if (!Array.isArray(names) || names.length === 0) return;
 
-        if (!names.length) return;
+        const displayName = categoryMap[category] || category;
+        const usePopup = names.length >= 99;
+        const targetContainer = usePopup ? document.createElement("div") : container;
 
-        // sidemenu enabled via changing the length condition
-        const displayName = categoryMap[categoryLabel] || categoryLabel;
-        const targetContainer = names.length < 99 ? container : document.createElement("div");
-
-        if (names.length >= 99) {
+        if (usePopup) {
           targetContainer.className = "popup-sidemenu";
           targetContainer.style.display = "none";
 
@@ -99,7 +102,6 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, activeDoma
             sidebar.querySelectorAll(".popup-sidemenu").forEach(p => {
               if (p !== targetContainer) p.style.display = "none";
             });
-
             targetContainer.style.display = targetContainer.style.display === "none" ? "flex" : "none";
             targetContainer.style.top = `${groupDiv.getBoundingClientRect().top}px`;
             e.stopPropagation();
@@ -111,72 +113,58 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, activeDoma
           const label = document.createElement("div");
           label.style.fontWeight = "600";
           label.style.marginTop = "6px";
-          label.innerHTML = displayName
+          label.innerHTML = displayName;
           container.appendChild(label);
         }
 
         names.forEach(name => {
-          const checkboxId = `toggle-${airport}${categoryLabel}${name}`;
+          const checkboxId = `toggle-${airport}${category}${name}`;
           const checkboxDiv = buildCheckbox(checkboxId, name);
           targetContainer.appendChild(checkboxDiv);
 
           const checkbox = checkboxDiv.querySelector("input");
+          const entry = GEOLAYERS[domain]?.[airport]?.[category]?.[name];
 
           checkbox.addEventListener("change", function () {
-            const entry = GEOLAYERS[domain][airport]?.[categoryLabel]?.[name];
             if (!entry) return;
+            const layers = (entry instanceof L.Layer || entry instanceof L.LayerGroup)
+              ? [entry]
+              : Object.values(entry);
 
-            if (entry instanceof L.Layer || entry instanceof L.LayerGroup) {
-              this.checked ? map.addLayer(entry) : map.removeLayer(entry);
-            } else if (typeof entry === 'object') {
-              Object.values(entry).forEach(layer => {
-                if (layer instanceof L.Layer || layer instanceof L.LayerGroup) {
-                  this.checked ? map.addLayer(layer) : map.removeLayer(layer);
-                }
-              });
-            }
-
-            updateURLFromMapState();
+            layers.forEach(layer => this.checked ? map.addLayer(layer) : map.removeLayer(layer));
+            updateURL();
           });
 
-          // For sectors, manage the right bar expansion
-          if (categoryLabel === 'sectors') {
-            const positionLayers = GEOLAYERS[domain][airport]?.[categoryLabel]?.[name];
-            if (typeof positionLayers !== 'object') return;
-
+          if (category === 'sectors') {
             checkbox.addEventListener("change", function () {
               const rightbar = document.getElementById("rightbar");
               const groupId = `rightbar-airport-${airport}`;
               const fileId = `rightbar-file-${airport}-${name}`;
 
               if (!this.checked) {
-                const fileContainer = document.getElementById(fileId);
-                if (fileContainer) fileContainer.remove();
-
-                const groupContainer = document.getElementById(groupId);
-                if (groupContainer && groupContainer.querySelectorAll('.rightbar-file').length === 0) {
-                  groupContainer.remove();
-                }
+                document.getElementById(fileId)?.remove();
+                const group = document.getElementById(groupId);
+                if (group && group.querySelectorAll('.rightbar-file').length === 0) group.remove();
                 return;
               }
 
-              let groupContainer = document.getElementById(groupId);
-              if (!groupContainer) {
-                groupContainer = document.createElement("div");
-                groupContainer.id = groupId;
-                groupContainer.className = "rightbar-airport-group";
-                groupContainer.style.marginBottom = "16px";
+              let group = document.getElementById(groupId);
+              if (!group) {
+                group = document.createElement("div");
+                group.id = groupId;
+                group.className = "rightbar-airport-group";
+                group.style.marginBottom = "16px";
 
                 const header = document.createElement("div");
                 header.className = "position-airport-header dropdown-toggle";
                 header.innerText = airport;
 
-                groupContainer.appendChild(header);
-                rightbar.appendChild(groupContainer);
+                group.appendChild(header);
+                rightbar.appendChild(group);
               }
 
-              const fileContainer = buildToggle(map, positionLayers, fileId, airport, categoryLabel, name, updateURLFromMapState);
-              groupContainer.appendChild(fileContainer);
+              const fileContainer = buildToggle(map, entry, fileId, airport, category, name, updateURL);
+              group.appendChild(fileContainer);
             });
           }
         });
@@ -192,16 +180,15 @@ function buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, activeDoma
 }
 
 /**
- * Attach dropdown toggle event handlers (optional if not inline)
- * 
- * @param {HTMLElement} sidebar 
+ * Event handles when user clicks on a dropdown, expand and show the menu
+ * @param {*} sidebar 
  */
 function attachSidebarListeners(sidebar) {
   sidebar.addEventListener("click", function (e) {
     const toggle = e.target.closest(".dropdown-toggle");
     if (toggle) {
       const container = toggle.nextElementSibling;
-      if (container && container.classList.contains("dropdown-container")) {
+      if (container?.classList.contains("dropdown-container")) {
         const isOpen = container.style.display === "block";
         container.style.display = isOpen ? "none" : "block";
         toggle.classList.toggle("open", !isOpen);

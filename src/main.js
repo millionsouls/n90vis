@@ -30,7 +30,12 @@ window.LayerControl = {
                 .map(([posName]) => posName);
 
               if (activePositions.length > 0) {
-                sectorData[filename] = activePositions;
+                // For enroute, only encode the filename if any positions are active
+                if (domain === 'enroute') {
+                  sectorData[filename] = activePositions; // Will be handled in url-handler
+                } else {
+                  sectorData[filename] = activePositions;
+                }
               }
             });
             if (Object.keys(sectorData).length > 0) {
@@ -58,6 +63,32 @@ window.LayerControl = {
       Object.entries(airports).forEach(([airport, categories]) => {
         Object.entries(categories).forEach(([category, value]) => {
           if (category === 'sectors') {
+            // ENROUTE: value is an array of filenames
+            if (domain === 'enroute' && Array.isArray(value)) {
+              value.forEach(filename => {
+                const posLayers = GEOLAYERS[domain]?.[airport]?.[category]?.[filename];
+                if (!posLayers) return;
+
+                // Activate all positions
+                Object.entries(posLayers).forEach(([posName, layer]) => {
+                  if (!map.hasLayer(layer)) map.addLayer(layer);
+                  const checkboxId = `toggle-${airport}sectors${filename}${posName}`;
+                  const checkbox = document.getElementById(checkboxId);
+                  if (checkbox) checkbox.checked = true;
+                });
+
+                // Always check and trigger the sector file checkbox
+                const sectorCheckboxId = `toggle-${airport}sectors${filename}`;
+                const sectorCheckbox = document.getElementById(sectorCheckboxId);
+                if (sectorCheckbox && !sectorCheckbox.checked) {
+                  sectorCheckbox.checked = true;
+                  // Only dispatch if not already checked, to avoid double events
+                  sectorCheckbox.dispatchEvent(new Event('change'));
+                }
+              });
+              return;
+            }
+            // TRACON: value is an object
             Object.entries(value).forEach(([filename, activePositions]) => {
               const posLayers = GEOLAYERS[domain]?.[airport]?.[category]?.[filename];
               if (!posLayers) return;
@@ -114,13 +145,14 @@ window.LayerControl = {
 function switchDomain(newDomain) {
   ACTIVE_DOMAIN = newDomain;
 
+  // No need to rebuild the sidebar, just toggle visibility
+  document.querySelectorAll('[id^="sidebar-domain-"]').forEach(div => {
+    div.style.display = (div.id === `sidebar-domain-${ACTIVE_DOMAIN}`) ? "block" : "none";
+  });
+
   const domainData = GEODATA[ACTIVE_DOMAIN];
   const domainLayers = GEOLAYERS[ACTIVE_DOMAIN];
 
-  const sidebarEl = document.getElementById("sidebar");
-  sidebarEl.innerHTML = ''; // Clear previous content
-
-  buildSidebar(domainData, domainLayers, map, updateURLFromMapState);
   setupSearch(domainData, domainLayers, map, updateURLFromMapState);
 
   updateURLFromMapState();
@@ -133,12 +165,9 @@ fetch('data/file-index.json')
   })
   .then(geoFiles => loadGeoFiles(geoFiles, map))
   .then(() => {
-    const domainData = GEODATA[ACTIVE_DOMAIN];
-    const domainLayers = GEOLAYERS[ACTIVE_DOMAIN];
-
-    buildSidebar(domainData, domainLayers, map, updateURLFromMapState);
+    buildSidebar(GEODATA, GEOLAYERS, map, updateURLFromMapState, ACTIVE_DOMAIN);
     attachSidebarListeners(document.getElementById("sidebar"));
-    setupSearch(domainData, domainLayers, map, updateURLFromMapState);
+    setupSearch(GEODATA[ACTIVE_DOMAIN], GEOLAYERS[ACTIVE_DOMAIN], map, updateURLFromMapState);
 
     const enabled = getEnabledLayersFromURL();
     if (enabled && window.LayerControl) {

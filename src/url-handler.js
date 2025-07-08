@@ -60,6 +60,14 @@ function encodeLayers(domainData) {
           const sectorStrings = [];
 
           Object.entries(layers).forEach(([filename, positions]) => {
+            // For enroute, only encode the filename if any positions are active
+            if (domain === 'enroute') {
+              if (positions && positions.length > 0) {
+                sectorStrings.push(filename);
+              }
+              return;
+            }
+
             if (!positions || positions.length === 0) {
               if (!includePositions) {
                 sectorStrings.push(filename);
@@ -135,10 +143,30 @@ function decodeLayers(encoded, GEOLAYERS) {
           if (!cat) return;
 
           if (cat === 'sectors') {
+            if (domain === 'enroute') {
+              // ENROUTE: just an array of filenames
+              const filenames = layerStr.split('|').filter(Boolean);
+              if (filenames.length > 0) {
+                result[domain][airport][cat] = filenames;
+              }
+              return;
+            }
             const sectorObj = {};
             const entries = layerStr.split('|');
 
             entries.forEach(entry => {
+              // For enroute, entry is just the filename
+              if (domain === 'enroute') {
+                const filename = entry;
+                if (!filename) return;
+                const allPositions = Object.keys(
+                  GEOLAYERS?.[domain]?.[airport]?.[cat]?.[filename] || {}
+                );
+                sectorObj[filename] = allPositions;
+                return;
+              }
+
+              // tracon: filename-suffixes
               const [filename, suffixStr] = entry.split('-');
               if (!filename) return;
 

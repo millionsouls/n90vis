@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -38,20 +38,20 @@
     </div>
     <p style="text-align:center; margin:10px 0px 0px 0px; font-weight:200px;"></p>
     <div id="general-options" class="flex-center">
-      <button type="button" id="reset-layers">Reset Layers</button>
-      <button type="button" id="toggle-markers">Toggle Labels</button>
-      <button type="button" id="toggle-basemap">Toggle Map</button>
-      <button type="button" id="toggle-basemap">Toggle IDs</button>
-      <button type="button" id="toggle-darkmode">Dark Mode</button>
-      <button type="button" id="help-button" style="background:#83c995">Help</button>
+      <button type="button" id="reset-layers"><i class="fa-solid fa-layer-group"></i> Layers</button>
+      <button type="button" id="toggle-markers"><i class="fa-solid fa-tag"></i> Labels</button>
+      <button type="button" id="toggle-basemap"><i class="fa-solid fa-map"></i> Map</button>
+      <button type="button" id="toggle-basemap"><i class="fa-solid fa-headset"></i> Callsign</button>
+      <button type="button" id="toggle-darkmode"><i class="fa-solid fa-moon"></i> Dark Mode</button>
+      <button type="button" id="help-button" style="background:#83c995"><i class="fa-solid fa-question"></i> Help</button>
     </div>
-    <div id="search-section">
+    <div id="search-section"> 
       <input type="text" id="search-input" placeholder="Search">
       <div id="search-results"></div>
     </div>
     <div style="display: flex; justify-content: center; margin-top: 5px; gap: 5px;">
-      <button type="button" id="btn-tracon">Terminal</button>
-      <button type="button" id="btn-enroute">Enroute</button>
+      <button type="button" id="btn-tracon"><img width="20" height="20" src="https://img.icons8.com/ios-glyphs/30/airport-building.png" alt="airport-building"/> Terminal</button>
+      <button type="button" id="btn-enroute"><img width="20" height="20" src="https://img.icons8.com/fluency-systems-regular/20/around-the-globe.png" alt="around-the-globe"/> Enroute</button>
     </div>
     <div id="sidebar"></div>
   </div>
@@ -77,7 +77,7 @@
   <footer id="page-footer">
     <a href="https://github.com/millionsouls/n90vis" target="_blank" rel="noopener noreferrer"
       title="GitHub Repository">
-      <i class="fa fa-github footer-logo" aria-hidden="true"></i>
+      <i class="fa-brands fa-github"></i>
       GitHub
     </a>
 

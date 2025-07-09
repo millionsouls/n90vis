@@ -58,7 +58,7 @@ setTimeout(() => {
     wrapper.className = 'leaflet-custom-topright';
     wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'row';
-    wrapper.style.gap = '6px'; // spacing between controls
+    wrapper.style.gap = '6px';
 
     // Move all children into wrapper
     while (mapContainer.firstChild) {
@@ -143,17 +143,35 @@ document.getElementById('toggle-markers').addEventListener('click', function () 
 });
 
 document.getElementById('toggle-darkmode').addEventListener('click', function () {
-  document.documentElement.classList.toggle('dark-mode');
+  document.documentElement.classList.toggle('dark-mode')
 
   if (document.documentElement.classList.contains('dark-mode')) {
-    map.removeLayer(currentLayer);
-    currentLayer = baseLayers["Dark"];
-    map.addLayer(currentLayer);
+    map.removeLayer(currentLayer)
+    currentLayer = baseLayers["Dark"]
+    map.addLayer(currentLayer)
   } else {
-    map.removeLayer(currentLayer);
-    currentLayer = baseLayers["Standard"];
-    map.addLayer(currentLayer);
+    map.removeLayer(currentLayer)
+    currentLayer = baseLayers["Standard"]
+    map.addLayer(currentLayer)
   }
-})
+
+  // Re-style all active videomaps
+  const lineColor = document.documentElement.classList.contains('dark-mode') ? '#d6d6d6' : '#000';
+
+  Object.entries(GEOLAYERS).forEach(([station, airports]) => {
+    Object.entries(airports).forEach(([airport, categoryObj]) => {
+      if (!categoryObj.videomap) return;
+
+      Object.entries(categoryObj.videomap).forEach(([name, layer]) => {
+        if (layer instanceof L.GeoJSON && map.hasLayer(layer)) {
+          layer.setStyle(feature => {
+            return feature.geometry.type === "LineString" ? { color: lineColor, weight: 1.3 } : {};
+          })
+        }
+      })
+    })
+  })
+});
+
 
 export { map }

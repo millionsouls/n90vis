@@ -41,8 +41,9 @@
       <button type="button" id="reset-layers">Reset Layers</button>
       <button type="button" id="toggle-markers">Toggle Labels</button>
       <button type="button" id="toggle-basemap">Toggle Map</button>
-      <button type="button" onclick="toggleDarkMode()">Dark Mode</button>
-      <button type="button" id="help-button">Help</button>
+      <button type="button" id="toggle-basemap">Toggle IDs</button>
+      <button type="button" id="toggle-darkmode">Dark Mode</button>
+      <button type="button" id="help-button" style="background:#83c995">Help</button>
     </div>
     <div id="search-section">
       <input type="text" id="search-input" placeholder="Search">
@@ -91,12 +92,14 @@
       <span id="close-help">&times;</span>
       <h2>Welcome to the ZNY Airspace Visualizer!</h2>
       <p>This tool is mainly meant to help visualize TRACON & Enroute airspace within ZNY ARTCC. Procedures such as SIDs/STARs may also be overlayed.</p>
+      <p><b>NOTE:</b> This tool should only be used as a supplicant, always read and check the facility specific SOP as not all information may be displayed here.</p>
       <ul>
         <li><b>General Options:</b></li>
         <ul>
           <li><b>Reset Layers:</b> Clears all layers & features from the map</li>
           <li><b>Toggle Labels:</b> Toggles the visibility of labels on procedures</li>
           <li><b>Toggle Map:</b> Toggles the visibility of the basemap</li>
+          <li><b>Toggle IDs:</b> Toggles the position name between identifier and callsign (N2K, ROBER)</li>
           <li><b>Dark Mode:</b> Does what the tin says!</li>
         </ul>
         <li><b>Map Layers:</b> Top left contains a selection of maps.</li>
@@ -134,9 +137,6 @@
       resultsBox.style.display = "none";
     }
   });
-  function toggleDarkMode() {
-    document.documentElement.classList.toggle('dark-mode');
-  }
 
   // Help div scripts
   const helpBtn = document.getElementById('help-button');

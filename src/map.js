@@ -142,4 +142,18 @@ document.getElementById('toggle-markers').addEventListener('click', function () 
   this.classList.toggle('off', anyVisible);
 });
 
+document.getElementById('toggle-darkmode').addEventListener('click', function () {
+  document.documentElement.classList.toggle('dark-mode');
+
+  if (document.documentElement.classList.contains('dark-mode')) {
+    map.removeLayer(currentLayer);
+    currentLayer = baseLayers["Dark"];
+    map.addLayer(currentLayer);
+  } else {
+    map.removeLayer(currentLayer);
+    currentLayer = baseLayers["Standard"];
+    map.addLayer(currentLayer);
+  }
+})
+
 export { map }

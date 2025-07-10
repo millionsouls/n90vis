@@ -40,10 +40,10 @@ function decompress(str) {
  * @param {*} layersNested 
  * @returns 
  */
-function encodeLayers(domainData) {
+function encodeLayers(stationData) {
   const domainStrings = [];
 
-  Object.entries(domainData).forEach(([station, data]) => {
+  Object.entries(stationData).forEach(([station, data]) => {
     const airportStrings = [];
 
     Object.entries(data).forEach(([airport, categories]) => {
@@ -52,7 +52,6 @@ function encodeLayers(domainData) {
       for (const cat in categories) {
         const abbr = categoryAbbr[cat];
         if (!abbr) continue;
-
         const layers = categories[cat];
         if (!layers) continue;
 
@@ -105,7 +104,6 @@ function encodeLayers(domainData) {
   return encBase64(compactStr);
 }
 
-
 /**
  * Decode string into readable dictionary
  * 
@@ -151,22 +149,12 @@ function decodeLayers(encoded, GEOLAYERS) {
               }
               return;
             }
+
+            // TRACON: seperate out position names
             const sectorObj = {};
             const entries = layerStr.split('|');
 
             entries.forEach(entry => {
-              // For enroute, entry is just the filename
-              if (station === 'enroute') {
-                const filename = entry;
-                if (!filename) return;
-                const allPositions = Object.keys(
-                  GEOLAYERS?.[station]?.[airport]?.[cat]?.[filename] || {}
-                );
-                sectorObj[filename] = allPositions;
-                return;
-              }
-
-              // tracon: filename-suffixes
               const [filename, suffixStr] = entry.split('-');
               if (!filename) return;
 
@@ -181,11 +169,16 @@ function decodeLayers(encoded, GEOLAYERS) {
             if (Object.keys(sectorObj).length > 0) {
               result[station][airport][cat] = sectorObj;
             }
+          } else if (['sids', 'stars', 'videomap'].includes(cat)) {
+            const items = layerStr.split(',').filter(Boolean);
+            if (items.length > 0) {
+              result[station][airport][cat] = items;
+            }
           }
         });
       });
     });
-      console.log("url out: ", result)
+    console.log("url out: ", result)
     return result;
   } catch (err) {
     console.error('URL Decode error:', err);

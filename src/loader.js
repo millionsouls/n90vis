@@ -100,7 +100,7 @@ function loadPD(map, data, fmtName) {
  */
 function loadVM(map, data, fmtName) {
   return L.geoJSON(data, {
-    style: feature => feature.geometry.type === "LineString" ? { color: "#000", weight: 1 } : {},
+    style: feature => feature.geometry.type === "LineString" ? { color: "#000", weight: 1.3 } : {},
     pointToLayer: () => null
   });
 }

@@ -124,11 +124,20 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 5px;
-  padding: 10px;
+  padding: 0px 10px 10px 10px;
   text-align: center;
 }
-#general-options > button {
+#general-options button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+  gap: 6px;
   margin: 0px;
+  height: 30px;
+  width: auto;
+}
+#general-options i {
+  margin: 0;
 }
 #general-options > button:only-child,
 #general-options > button:nth-last-child(2):first-child {

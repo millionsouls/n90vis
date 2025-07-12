@@ -9,6 +9,8 @@
   --textcolor-darker: #333;
   --textcolor-solid: #ffffff;
 
+  --line-color: #000;
+
   --boxshadow-center: 0 0px 15px rgba(0,0,0,0.7);
   --boxshadow-glass: 0 0px 17px rgba(0,0,0,1);
   --boxshadow-btm: 0 5px 10px rgba(0, 0, 0, 0.4);
@@ -22,6 +24,8 @@
   --textcolor-dark: #ffffff;
   --textcolor-darker: #e2e2e2;
   --textcolor-solid: #frgb(0, 0, 0)
+
+    --line-color: #fff;
 
   --boxshadow-center: 0 0px 2px rgba(255, 255, 255, 0);
   --boxshadow-glass: 0 0px 2px rgba(255, 255, 255, 0);
@@ -51,6 +55,8 @@ button {
 }
 button:active {
   transform: translateY(2px);
+  background: var(--bg-one);
+  color: var(--textcolor-darker);
 }
 svg {
   overflow: visible;
